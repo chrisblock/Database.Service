@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -52,9 +53,11 @@ namespace Database.Service.Controllers
 			//var codeBase = mappingType.Assembly.CodeBase;
 			//var wat = Assembly.Load(assemblyString);
 
+			var desktop = Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), "Desktop");
+
 			using (var sessionFactory = Fluently.Configure(configuration)
-				.Diagnostics(diagnostics => diagnostics.Enable(true).OutputToFile(@"C:\Users\Chris Block\Desktop\FluentLog.log"))
-				.Mappings(mappings => mappings.FluentMappings.Add(mappingType).ExportTo(@"C:\Users\Chris Block\Desktop"))
+				.Diagnostics(diagnostics => diagnostics.Enable(true).OutputToFile(Path.Combine(desktop, "Fluent.log")))
+				.Mappings(mappings => mappings.FluentMappings.Add(mappingType).ExportTo(desktop))
 				.BuildSessionFactory())
 			{
 				using (var session = sessionFactory.OpenStatelessSession())
