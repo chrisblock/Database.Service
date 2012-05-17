@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Web.Http;
 
 using Database.Core;
@@ -13,6 +14,8 @@ using FluentNHibernate.Cfg;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
 using NHibernate.Driver;
+
+using Newtonsoft.Json;
 
 using Configuration = NHibernate.Cfg.Configuration;
 
@@ -44,9 +47,7 @@ namespace Database.Service.Controllers
 					x.ConnectionString = connect.GetConnectionString();
 				});
 
-			IList result;
-
-			var hmm = Type.GetType(mappingType.AssemblyQualifiedName);
+			IEnumerable result;
 
 			// TODO: once Assembly.Load works on the dynamic assembly, then NHibernate will be able to find the entity type
 			//var assemblyString = mappingType.Assembly.FullName;
@@ -66,7 +67,9 @@ namespace Database.Service.Controllers
 				}
 			}
 
-			var response = new HttpResponseMessage<IList>(result, HttpStatusCode.OK);
+			var stringResult = JsonConvert.SerializeObject(result);
+
+			var response = new HttpResponseMessage<string>(stringResult, HttpStatusCode.OK);
 
 			return response;
 		}

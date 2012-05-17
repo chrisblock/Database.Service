@@ -58,8 +58,10 @@ namespace Database.Core
 
 			var columns = ReflectTable().ToList();
 
-			_entityType = AnonymousTypeManager.BuildEntityType(_tableName, columns);
-			_mappingType = AnonymousTypeManager.BuildMappingType(_tableName, columns);
+			var types = DynamicAssemblyManager.BuildTypesForTable(tableName, columns);
+
+			_entityType = types.Item1;
+			_mappingType = types.Item2;
 		}
 
 		private IEnumerable<ColumnDefinition> ReflectTable()
