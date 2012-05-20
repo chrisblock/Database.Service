@@ -1,7 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+
+using FluentNHibernate.Cfg;
+
+using NHibernate;
+using NHibernate.Cfg;
+using NHibernate.Dialect;
+using NHibernate.Driver;
+using NHibernate.Linq;
 
 namespace Database.Core
 {
@@ -123,6 +132,41 @@ namespace Database.Core
 		public string GetConnectionString()
 		{
 			return _connect.GetConnectionString();
+		}
+
+		private ISessionFactory BuildSessionFactory()
+		{
+			var configuration = new Configuration()
+				.DataBaseIntegration(x =>
+				{
+					x.Dialect<MsSql2008Dialect>();
+					x.Driver<SqlClientDriver>();
+					x.ConnectionString = GetConnectionString();
+				});
+
+			var sessionFactory = Fluently.Configure(configuration)
+				.Mappings(mappings => mappings.FluentMappings.Add(_mappingType))
+				.BuildSessionFactory();
+
+			return sessionFactory;
+		}
+
+		public IQueryable<T> Execute<T>() where T : class
+		{
+			var result = new List<T>().AsQueryable();
+
+			using (var sessionFactory = BuildSessionFactory())
+			{
+				using (var session = sessionFactory.OpenStatelessSession())
+				{
+					// TODO: some kind of conversation pattern for unit-of-work management so the actual NHibernate IQueryable can be returned
+					result = session.Query<T>()
+						.ToList()
+						.AsQueryable();
+				}
+			}
+
+			return result;
 		}
 	}
 }

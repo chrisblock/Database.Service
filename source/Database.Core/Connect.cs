@@ -58,7 +58,17 @@ namespace Database.Core
 
 		public static Connect To(string databaseName)
 		{
-			return To(Environment.MachineName, databaseName);
+			return To("localhost", databaseName);
+		}
+
+		public override string ToString()
+		{
+			return GetConnectionString();
+		}
+
+		public override int GetHashCode()
+		{
+			return String.Format("ConnectionString:{0};", GetConnectionString()).GetHashCode();
 		}
 	}
 }
