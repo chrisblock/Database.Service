@@ -119,5 +119,10 @@ namespace Database.Core
 		{
 			return _mappingType;
 		}
+
+		public string GetConnectionString()
+		{
+			return _connect.GetConnectionString();
+		}
 	}
 }

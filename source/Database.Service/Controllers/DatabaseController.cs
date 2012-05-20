@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Web.Http;
 
 using Database.Core;
@@ -14,8 +13,6 @@ using FluentNHibernate.Cfg;
 using NHibernate.Cfg;
 using NHibernate.Dialect;
 using NHibernate.Driver;
-
-using Newtonsoft.Json;
 
 using Configuration = NHibernate.Cfg.Configuration;
 
@@ -36,7 +33,25 @@ namespace Database.Service.Controllers
 
 			var query = connect.CreateQuery(tableName);
 
-			var entityType = query.GetEntityType();
+			var type = GetType();
+
+			var genericGetMethod = type.GetMethod("Get", BindingFlags.Instance | BindingFlags.NonPublic);
+
+			var getMethod = genericGetMethod.MakeGenericMethod(query.GetEntityType());
+
+			var result = (HttpResponseMessage) getMethod.Invoke(this, new object[] { query });
+
+			return result;
+		}
+
+		public HttpResponseMessage Get(string databaseName, string tableName)
+		{
+			return Get(System.Environment.MachineName, databaseName, tableName);
+		}
+
+		private HttpResponseMessage<IEnumerable<T>> Get<T>(Query query)
+			where T : class
+		{
 			var mappingType = query.GetMappingType();
 
 			var configuration = new Configuration()
@@ -44,15 +59,10 @@ namespace Database.Service.Controllers
 				{
 					x.Dialect<MsSql2008Dialect>();
 					x.Driver<SqlClientDriver>();
-					x.ConnectionString = connect.GetConnectionString();
+					x.ConnectionString = query.GetConnectionString();
 				});
 
-			IEnumerable result;
-
-			// TODO: once Assembly.Load works on the dynamic assembly, then NHibernate will be able to find the entity type
-			//var assemblyString = mappingType.Assembly.FullName;
-			//var codeBase = mappingType.Assembly.CodeBase;
-			//var wat = Assembly.Load(assemblyString);
+			IEnumerable<T> result;
 
 			var desktop = Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), "Desktop");
 
@@ -63,20 +73,14 @@ namespace Database.Service.Controllers
 			{
 				using (var session = sessionFactory.OpenStatelessSession())
 				{
-					result = session.CreateCriteria(entityType).List();
+					result = session.QueryOver<T>()
+						.List();
 				}
 			}
 
-			var stringResult = JsonConvert.SerializeObject(result);
-
-			var response = new HttpResponseMessage<string>(stringResult, HttpStatusCode.OK);
+			var response = new HttpResponseMessage<IEnumerable<T>>(result, HttpStatusCode.OK);
 
 			return response;
-		}
-
-		public HttpResponseMessage Get(string databaseName, string tableName)
-		{
-			return Get(System.Environment.MachineName, databaseName, tableName);
 		}
 	}
 }
