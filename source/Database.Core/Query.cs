@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 
 using FluentNHibernate.Cfg;
@@ -83,7 +83,19 @@ namespace Database.Core
 
 				using (var command = connection.CreateCommand())
 				{
-					command.CommandText = "SELECT [columns].[name] AS [Name], [types].[name] AS [Type], ISNULL([indexes].[is_primary_key], 0) AS [IsKey] FROM [sys].[columns] AS [columns] LEFT OUTER JOIN [sys].[types] AS [types] ON [columns].[system_type_id] = [types].[system_type_id] LEFT OUTER JOIN [sys].[index_columns] AS [i_columns] ON [columns].[object_id] = [i_columns].[object_id] AND [columns].[column_id] = [i_columns].[column_id] LEFT OUTER JOIN [sys].[indexes] AS [indexes] ON [i_columns].[object_id] = [indexes].[object_id] WHERE [columns].[object_id] = OBJECT_ID(@tableName);";
+					var commandTextBuilder = new StringBuilder();
+
+					commandTextBuilder.AppendLine("SELECT");
+					commandTextBuilder.AppendLine("      [columns].[name] AS [Name]");
+					commandTextBuilder.AppendLine("    , [types].[name] AS [Type]");
+					commandTextBuilder.AppendLine("    , ISNULL([indexes].[is_primary_key], 0) AS [IsPrimaryKey]");
+					commandTextBuilder.AppendLine("FROM [sys].[columns] AS [columns]");
+					commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[types] AS [types] ON [columns].[system_type_id] = [types].[system_type_id]");
+					commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[index_columns] AS [i_columns] ON [columns].[object_id] = [i_columns].[object_id] AND [columns].[column_id] = [i_columns].[column_id]");
+					commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[indexes] AS [indexes] ON [i_columns].[object_id] = [indexes].[object_id]");
+					commandTextBuilder.AppendLine("WHERE [columns].[object_id] = OBJECT_ID(@tableName);");
+
+					command.CommandText = commandTextBuilder.ToString();
 
 					command.AddParameter("tableName", _tableName);
 
@@ -91,9 +103,9 @@ namespace Database.Core
 					{
 						while (reader.Read())
 						{
-							var columnName = (string)reader["Name"];
-							var type = (string)reader["Type"];
-							var isPrimaryKey = (bool) reader["IsKey"];
+							var columnName = (string) reader["Name"];
+							var type = (string) reader["Type"];
+							var isPrimaryKey = (bool) reader["IsPrimaryKey"];
 
 							Type columnType;
 							if (TypeMapping.TryGetValue(type, out columnType) == false)

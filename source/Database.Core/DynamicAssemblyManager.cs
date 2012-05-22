@@ -15,9 +15,10 @@ namespace Database.Core
 {
 	public static class DynamicAssemblyManager
 	{
-		private static readonly MethodInfo ParameterExpressionMethod = typeof(Expression).GetMethod("Parameter", new[] { typeof(Type), typeof(string) });
-		private static readonly MethodInfo PropertyExpressionMethod = typeof(Expression).GetMethod("Property", new[] { typeof(Expression), typeof(MethodInfo) });
-		private static readonly MethodInfo UnaryExpressionMethod = typeof(Expression).GetMethod("Convert", new[] { typeof(Expression), typeof(Type) });
+		private static readonly MethodInfo ParameterExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Parameter(null, null));
+		private static readonly MethodInfo PropertyExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Property(null, (MethodInfo)null));
+		private static readonly MethodInfo UnaryExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Convert(null, null));
+		private static readonly MethodInfo OpenGenericLambdaFunction = ReflectionUtility.GetMethodInfo(() => Expression.Lambda<Type>(null, null));
 
 		private static readonly MethodInfo GetTypeFromHandleMethod = typeof(Type).GetMethod("GetTypeFromHandle", BindingFlags.Static | BindingFlags.Public);
 		private static readonly MethodInfo GetMethodFromHandleMethod = typeof(MethodBase).GetMethod("GetMethodFromHandle", new[] { typeof(RuntimeMethodHandle) });
@@ -129,18 +130,15 @@ namespace Database.Core
 
 						if (idColumns.Any())
 						{
-							if (idColumns.Count > 1)
-							{
-								// TODO: this won't work, as it will infinitely recurse
-								//var idType = BuildEntityType(String.Format("{0}Id", entityName), idColumns);
-								//typeBuilder.DefineProperty("Id", idType);
-								throw new NotSupportedException(String.Format("Multiple primary key columns found for table '{0}'.", entityName));
-							}
-							else
+							if (idColumns.Count == 1)
 							{
 								var id = idColumns.Single();
 
 								typeBuilder.DefineProperty(id.Name, id.Type);
+							}
+							else
+							{
+								throw new NotSupportedException(String.Format("Multiple primary key columns found for table '{0}'.", entityName));
 							}
 						}
 						else
@@ -176,14 +174,7 @@ namespace Database.Core
 						var fullFuncType = OpenGenericFuncType.MakeGenericType(entityType, typeof(object));
 						var filledExpressionType = OpenGenericExpressionType.MakeGenericType(fullFuncType);
 
-						// TODO: there has got to be a better way to find this MethodInfo...
-						var genericLambdaFunction = typeof(Expression).GetMethods(BindingFlags.Static | BindingFlags.Public)
-							.Where(x => x.Name == "Lambda")
-							.Where(x => x.GetGenericArguments().Count() == 1)
-							.Where(x => x.GetParameters().Count() == 2)
-							.Single(x => x.GetParameters().ElementAt(1).ParameterType == typeof(ParameterExpression[]));
-
-						var lambdaExpressionFunction = genericLambdaFunction.MakeGenericMethod(fullFuncType);
+						var lambdaExpressionFunction = OpenGenericLambdaFunction.MakeGenericMethod(fullFuncType);
 
 						var mapMethod = baseClassType.GetMethod("Map", new[] { filledExpressionType });
 						var idMethod = baseClassType.GetMethod("Id", new[] { filledExpressionType });
@@ -195,6 +186,11 @@ namespace Database.Core
 						var constructorIntermediateLanguageGenerator = constructorBuilder.GetILGenerator();
 
 						var baseParameterlessConstructor = baseClassType.GetConstructor(Type.EmptyTypes);
+
+						if (baseParameterlessConstructor == null)
+						{
+							throw new NullReferenceException(String.Format("Parameterless constructor not found for type '{0}'.", baseClassType));
+						}
 
 						constructorIntermediateLanguageGenerator.Emit(OpCodes.Ldarg_0);
 						constructorIntermediateLanguageGenerator.Emit(OpCodes.Call, baseParameterlessConstructor);

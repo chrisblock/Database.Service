@@ -58,7 +58,7 @@ namespace Database.Core
 
 		public static Connect To(string databaseName)
 		{
-			return To("localhost", databaseName);
+			return To(Environment.MachineName, databaseName);
 		}
 
 		public override string ToString()
