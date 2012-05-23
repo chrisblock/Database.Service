@@ -16,6 +16,8 @@ namespace Database.Core
 {
 	public class Query
 	{
+		private static readonly Type OpenGenericNullableType = typeof (Nullable<>);
+
 		private static readonly IDictionary<string, Type> TypeMapping;
 
 		static Query()
@@ -89,6 +91,7 @@ namespace Database.Core
 					commandTextBuilder.AppendLine("      [columns].[name] AS [Name]");
 					commandTextBuilder.AppendLine("    , [types].[name] AS [Type]");
 					commandTextBuilder.AppendLine("    , ISNULL([indexes].[is_primary_key], 0) AS [IsPrimaryKey]");
+					commandTextBuilder.AppendLine("    , [columns].[is_nullable] AS [IsNullable]");
 					commandTextBuilder.AppendLine("FROM [sys].[columns] AS [columns]");
 					commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[types] AS [types] ON [columns].[system_type_id] = [types].[system_type_id]");
 					commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[index_columns] AS [i_columns] ON [columns].[object_id] = [i_columns].[object_id] AND [columns].[column_id] = [i_columns].[column_id]");
@@ -106,11 +109,17 @@ namespace Database.Core
 							var columnName = (string) reader["Name"];
 							var type = (string) reader["Type"];
 							var isPrimaryKey = (bool) reader["IsPrimaryKey"];
+							var isNullable = (bool)reader["IsNullable"];
 
 							Type columnType;
 							if (TypeMapping.TryGetValue(type, out columnType) == false)
 							{
 								throw new ArgumentException(String.Format("Type '{0}' is not a recognized SQL system type.", type));
+							}
+
+							if (columnType.IsValueType && isNullable)
+							{
+								columnType = OpenGenericNullableType.MakeGenericType(columnType);
 							}
 
 							var column = new ColumnDefinition
@@ -165,7 +174,7 @@ namespace Database.Core
 
 		public IQueryable<T> Execute<T>() where T : class
 		{
-			var result = new List<T>().AsQueryable();
+			IQueryable<T> result;
 
 			using (var sessionFactory = BuildSessionFactory())
 			{

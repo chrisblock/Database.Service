@@ -1,10 +1,10 @@
-using System.Data.SqlClient;
+using System.Data;
 
 namespace Database.Core
 {
-	public static class SqlCommandExtensions
+	public static class DbCommandExtensions
 	{
-		public static void AddParameter(this SqlCommand command, string parameterName, object parameterValue)
+		public static void AddParameter(this IDbCommand command, string parameterName, object parameterValue)
 		{
 			var parameter = command.CreateParameter();
 

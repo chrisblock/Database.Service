@@ -15,7 +15,7 @@ namespace Database.Service.Controllers
 
 		public HttpResponseMessage Get(string serverName, string instanceName, string databaseName, string tableName)
 		{
-			var serverNameWithInstance = String.Format("{0}\\{1}", serverName, instanceName);
+			var serverNameWithInstance = String.Format(@"{0}\{1}", serverName, instanceName);
 
 			return Get(serverNameWithInstance, databaseName, tableName);
 		}

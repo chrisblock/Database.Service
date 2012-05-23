@@ -18,8 +18,6 @@ namespace Database.Service
 
 		public static void RegisterRoutes(RouteCollection routes)
 		{
-			routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
-
 			routes.MapHttpRoute("ServerInstanceDatabaseTable", "{serverName}/{instanceName}/{databaseName}/{tableName}", new { controller = "Database" });
 			routes.MapHttpRoute("ServerDatabaseTable", "{serverName}/{databaseName}/{tableName}", new { controller = "Database" });
 			routes.MapHttpRoute("DatabaseTable", "{databaseName}/{tableName}", new { controller = "Database" });

@@ -12,7 +12,7 @@ namespace Database.Core
 
 			if (methodCall == null)
 			{
-				throw new ArgumentException(String.Format("{0}' was not a method call expression.", methodCall));
+				throw new ArgumentException(String.Format("'{0}' was not a method call expression.", expression.Body));
 			}
 
 			return methodCall.Method.IsGenericMethod
