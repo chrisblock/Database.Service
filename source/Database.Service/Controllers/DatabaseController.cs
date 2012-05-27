@@ -11,7 +11,7 @@ namespace Database.Service.Controllers
 {
 	public class DatabaseController : ApiController
 	{
-		private static readonly MethodInfo GenericGetMethod = typeof (DatabaseController).GetMethod("Get", BindingFlags.Instance | BindingFlags.NonPublic);
+		private static readonly MethodInfo OpenGenericGetMethod = typeof (DatabaseController).GetMethod("Get", BindingFlags.Instance | BindingFlags.NonPublic);
 
 		public HttpResponseMessage Get(string serverName, string instanceName, string databaseName, string tableName)
 		{
@@ -26,7 +26,7 @@ namespace Database.Service.Controllers
 
 			var query = connect.CreateQuery(tableName);
 
-			var getMethod = GenericGetMethod.MakeGenericMethod(query.GetEntityType());
+			var getMethod = OpenGenericGetMethod.MakeGenericMethod(query.GetEntityType());
 
 			var result = (HttpResponseMessage) getMethod.Invoke(this, new object[] { query });
 

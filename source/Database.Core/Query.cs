@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -67,15 +68,15 @@ namespace Database.Core
 			_connect = connect;
 			_tableName = tableName;
 
-			var columns = ReflectTable().ToList();
+			var tableDefinition = ReflectTable(_tableName);
 
-			var types = DynamicAssemblyManager.BuildTypesForTable(tableName, columns);
+			var types = DynamicAssemblyManager.BuildTypesForTable(tableDefinition);
 
 			_entityType = types.Item1;
 			_mappingType = types.Item2;
 		}
 
-		private IEnumerable<ColumnDefinition> ReflectTable()
+		private TableDefinition ReflectTable(string tableName)
 		{
 			var columns = new List<ColumnDefinition>();
 
@@ -100,7 +101,7 @@ namespace Database.Core
 
 					command.CommandText = commandTextBuilder.ToString();
 
-					command.AddParameter("tableName", _tableName);
+					command.AddParameter("tableName", tableName);
 
 					using(var reader = command.ExecuteReader())
 					{
@@ -137,7 +138,11 @@ namespace Database.Core
 				connection.Close();
 			}
 
-			return columns;
+			return new TableDefinition
+			{
+				Name = tableName,
+				Columns = columns
+			};
 		}
 
 		public Type GetEntityType()
@@ -166,7 +171,8 @@ namespace Database.Core
 				});
 
 			var sessionFactory = Fluently.Configure(configuration)
-				.Mappings(mappings => mappings.FluentMappings.Add(_mappingType))
+				.Diagnostics(d => d.Enable(true).OutputToFile(Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), "Desktop", "log.txt")))
+				.Mappings(mappings => mappings.FluentMappings.Add(_mappingType).ExportTo(Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), "Desktop")))
 				.BuildSessionFactory();
 
 			return sessionFactory;
