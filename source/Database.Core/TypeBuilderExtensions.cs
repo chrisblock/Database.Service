@@ -11,16 +11,18 @@ namespace Database.Core
 		private const MethodAttributes PublicVirtualHideBySig = MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig;
 		private const MethodAttributes PublicVirtualHideBySigSpecialName = PublicVirtualHideBySig | MethodAttributes.SpecialName;
 
-		private static readonly MethodInfo TypeInequalityOperator = typeof(Type).GetMethod("op_Inequality", new[] { typeof(Type), typeof(Type) });
+		private static readonly MethodInfo TypeInequalityOperator = typeof (Type).GetMethod("op_Inequality", new[] { typeof (Type), typeof (Type) });
 
-		private static readonly MethodInfo ObjectEqualsMethod = typeof(object).GetMethod("Equals", new[] { typeof(object) });
-		private static readonly MethodInfo ObjectReferenceEqualsMethod = typeof(object).GetMethod("ReferenceEquals", new[] { typeof(object), typeof(object) });
-		private static readonly MethodInfo ObjectGetTypeMethod = typeof(object).GetMethod("GetType", Type.EmptyTypes);
-		private static readonly MethodInfo ObjectGetHashCodeMethod = typeof(object).GetMethod("GetHashCode", Type.EmptyTypes);
+		private static readonly MethodInfo ObjectEqualsMethod = typeof (object).GetMethod("Equals", new[] { typeof (object) });
+		private static readonly MethodInfo ObjectGetTypeMethod = typeof (object).GetMethod("GetType", Type.EmptyTypes);
+		private static readonly MethodInfo ObjectGetHashCodeMethod = typeof (object).GetMethod("GetHashCode", Type.EmptyTypes);
 
-		private static readonly MethodInfo StringFormatMethod = typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object[]) });
+		private static readonly MethodInfo ObjectStaticEqualsMethod = typeof(object).GetMethod("Equals", new[] { typeof(object), typeof(object) });
+		private static readonly MethodInfo ObjectStaticReferenceEqualsMethod = typeof(object).GetMethod("ReferenceEquals", new[] { typeof(object), typeof(object) });
 
-		private static readonly MethodInfo GetTypeFromHandleMethod = typeof(Type).GetMethod("GetTypeFromHandle", BindingFlags.Static | BindingFlags.Public);
+		private static readonly MethodInfo StringFormatMethod = typeof (string).GetMethod("Format", new[] { typeof (string), typeof (object[]) });
+
+		private static readonly MethodInfo GetTypeFromHandleMethod = typeof (Type).GetMethod("GetTypeFromHandle", BindingFlags.Static | BindingFlags.Public);
 
 		public static PropertyBuilder DefineProperty(this TypeBuilder typeBuilder, string propertyName, Type propertyType)
 		{
@@ -79,8 +81,6 @@ namespace Database.Core
 
 			var il = method.GetILGenerator();
 
-			il.DeclareLocal(typeof(int));
-
 			il.DeclareLocal(typeof(object[]));
 
 			var parameterArraySize = identityProperties.Count;
@@ -89,7 +89,7 @@ namespace Database.Core
 
 			il.Emit(OpCodes.Newarr, typeof(object));
 
-			il.Emit(OpCodes.Stloc_1);
+			il.Emit(OpCodes.Stloc_0);
 
 			for (var i = 0; i < parameterArraySize; i++)
 			{
@@ -99,7 +99,7 @@ namespace Database.Core
 
 				var getMethod = property.GetGetMethod();
 
-				il.Emit(OpCodes.Ldloc_1);
+				il.Emit(OpCodes.Ldloc_0);
 
 				il.Emit(OpCodes.Ldc_I4, i);
 
@@ -117,7 +117,7 @@ namespace Database.Core
 
 			il.Emit(OpCodes.Ldstr, hashCodeFormatString);
 
-			il.Emit(OpCodes.Ldloc_1);
+			il.Emit(OpCodes.Ldloc_0);
 
 			il.Emit(OpCodes.Call, StringFormatMethod);
 
@@ -138,7 +138,58 @@ namespace Database.Core
 
 			var il = method.GetILGenerator();
 
+			var returnLocalZero = il.DefineLabel();
+
+			il.DeclareLocal(typeof (bool));
+
+			il.Emit(OpCodes.Ldnull);
+			il.Emit(OpCodes.Ldarg_1);
+			il.Emit(OpCodes.Call, ObjectStaticReferenceEqualsMethod);
+
 			il.Emit(OpCodes.Ldc_I4_1);
+			il.Emit(OpCodes.Ceq);
+
+			il.Emit(OpCodes.Brtrue_S, returnLocalZero);
+
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Ldarg_1);
+			il.Emit(OpCodes.Call, ObjectStaticReferenceEqualsMethod);
+
+			il.Emit(OpCodes.Stloc_0);
+			il.Emit(OpCodes.Ldloc_0);
+			il.Emit(OpCodes.Brtrue_S, returnLocalZero);
+
+			foreach (var property in includedProperties)
+			{
+				var type = property.PropertyType;
+				var getMethod = property.GetGetMethod();
+
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Callvirt, getMethod);
+
+				if (type.IsValueType)
+				{
+					il.Emit(OpCodes.Box, type);
+				}
+
+				il.Emit(OpCodes.Ldarg_1);
+				il.Emit(OpCodes.Callvirt, getMethod);
+
+				if (type.IsValueType)
+				{
+					il.Emit(OpCodes.Box, type);
+				}
+
+				il.Emit(OpCodes.Call, ObjectStaticEqualsMethod);
+
+				il.Emit(OpCodes.Brfalse_S, returnLocalZero);
+			}
+
+			il.Emit(OpCodes.Ldc_I4_1);
+			il.Emit(OpCodes.Stloc_0);
+
+			il.MarkLabel(returnLocalZero);
+			il.Emit(OpCodes.Ldloc_0);
 			il.Emit(OpCodes.Ret);
 
 			return method;
@@ -146,120 +197,118 @@ namespace Database.Core
 
 		public static MethodBuilder DefineOverrideEqualsMethod(this TypeBuilder typeBuilder, MethodInfo virtualEqualsMethod, ICollection<PropertyInfo> includedProperties)
 		{
-			var equalsOverride = typeBuilder.DefineMethod("Equals", PublicVirtualHideBySig, typeof(bool), new[] { typeof(object) });
+			var method = typeBuilder.DefineMethod("Equals", PublicVirtualHideBySig, typeof (bool), new[] { typeof (object) });
 
-			var equalsOverrideIntermediateLanguageGenerator = equalsOverride.GetILGenerator();
+			var il = method.GetILGenerator();
 
-			var referenceEqualThisAndArgument = equalsOverrideIntermediateLanguageGenerator.DefineLabel();
-			var compareTypeEquality = equalsOverrideIntermediateLanguageGenerator.DefineLabel();
-			var castAndCallVirtualEquals = equalsOverrideIntermediateLanguageGenerator.DefineLabel();
-			var returnLocalVariableZero = equalsOverrideIntermediateLanguageGenerator.DefineLabel();
+			var referenceEqualThisAndArgument = il.DefineLabel();
+			var compareTypeEquality = il.DefineLabel();
+			var castAndCallVirtualEquals = il.DefineLabel();
+			var returnLocalVariableZero = il.DefineLabel();
 
-			equalsOverrideIntermediateLanguageGenerator.DeclareLocal(typeof(bool));
-			equalsOverrideIntermediateLanguageGenerator.DeclareLocal(typeof(bool));
-
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Nop);
+			il.DeclareLocal(typeof(bool));
+			il.DeclareLocal(typeof(bool));
 
 			//
 			// ReferenceEquals(null, obj)
 			//
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldnull);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldarg_1);
+			il.Emit(OpCodes.Ldnull);
+			il.Emit(OpCodes.Ldarg_1);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Call, ObjectReferenceEqualsMethod);
+			il.Emit(OpCodes.Call, ObjectStaticReferenceEqualsMethod);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldc_I4_0);
+			il.Emit(OpCodes.Ldc_I4_0);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ceq);
+			il.Emit(OpCodes.Ceq);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Stloc_1);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldloc_1);
+			il.Emit(OpCodes.Stloc_1);
+			il.Emit(OpCodes.Ldloc_1);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Brtrue_S, referenceEqualThisAndArgument);
+			il.Emit(OpCodes.Brtrue_S, referenceEqualThisAndArgument);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Nop);
+			il.Emit(OpCodes.Nop);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldc_I4_0);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Stloc_0);
+			il.Emit(OpCodes.Ldc_I4_0);
+			il.Emit(OpCodes.Stloc_0);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Br_S, returnLocalVariableZero);
+			il.Emit(OpCodes.Br_S, returnLocalVariableZero);
 
 			//
 			// ReferenceEquals(this, obj)
 			//
-			equalsOverrideIntermediateLanguageGenerator.MarkLabel(referenceEqualThisAndArgument);
+			il.MarkLabel(referenceEqualThisAndArgument);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldarg_0);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldarg_1);
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Ldarg_1);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Call, ObjectReferenceEqualsMethod);
+			il.Emit(OpCodes.Call, ObjectStaticReferenceEqualsMethod);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldc_I4_0);
+			il.Emit(OpCodes.Ldc_I4_0);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ceq);
+			il.Emit(OpCodes.Ceq);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Stloc_1);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldloc_1);
+			il.Emit(OpCodes.Stloc_1);
+			il.Emit(OpCodes.Ldloc_1);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Brtrue_S, compareTypeEquality);
+			il.Emit(OpCodes.Brtrue_S, compareTypeEquality);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Nop);
+			il.Emit(OpCodes.Nop);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldc_I4_1);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Stloc_0);
+			il.Emit(OpCodes.Ldc_I4_1);
+			il.Emit(OpCodes.Stloc_0);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Br_S, returnLocalVariableZero);
+			il.Emit(OpCodes.Br_S, returnLocalVariableZero);
 
 			//
 			// obj.GetType() != typeof (<TYPE>)
 			//
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldarg_1);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Callvirt, ObjectGetTypeMethod);
+			il.Emit(OpCodes.Ldarg_1);
+			il.Emit(OpCodes.Callvirt, ObjectGetTypeMethod);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldtoken, typeBuilder);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Call, GetTypeFromHandleMethod);
+			il.Emit(OpCodes.Ldtoken, typeBuilder);
+			il.Emit(OpCodes.Call, GetTypeFromHandleMethod);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Call, TypeInequalityOperator);
+			il.Emit(OpCodes.Call, TypeInequalityOperator);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldc_I4_0);
+			il.Emit(OpCodes.Ldc_I4_0);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ceq);
+			il.Emit(OpCodes.Ceq);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Stloc_1);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldloc_1);
+			il.Emit(OpCodes.Stloc_1);
+			il.Emit(OpCodes.Ldloc_1);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Brtrue_S, castAndCallVirtualEquals);
+			il.Emit(OpCodes.Brtrue_S, castAndCallVirtualEquals);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Nop);
+			il.Emit(OpCodes.Nop);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldc_I4_0);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Stloc_0);
+			il.Emit(OpCodes.Ldc_I4_0);
+			il.Emit(OpCodes.Stloc_0);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Br_S, returnLocalVariableZero);
+			il.Emit(OpCodes.Br_S, returnLocalVariableZero);
 
 			//
 			// Equals((<TYPE>) obj)
 			//
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldarg_0);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldarg_1);
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Ldarg_1);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Castclass, typeBuilder);
+			il.Emit(OpCodes.Castclass, typeBuilder);
 
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Call, virtualEqualsMethod);
+			il.Emit(OpCodes.Call, virtualEqualsMethod);
 
 			//
 			// return
 			//
 
-			equalsOverrideIntermediateLanguageGenerator.MarkLabel(returnLocalVariableZero);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldloc_0);
-			equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ret);
+			il.MarkLabel(returnLocalVariableZero);
+			il.Emit(OpCodes.Ldloc_0);
+			il.Emit(OpCodes.Ret);
 
-			typeBuilder.DefineMethodOverride(equalsOverride, ObjectEqualsMethod);
+			typeBuilder.DefineMethodOverride(method, ObjectEqualsMethod);
 
-			return equalsOverride;
+			return method;
 		}
 	}
 }
