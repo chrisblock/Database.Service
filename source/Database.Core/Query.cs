@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -171,8 +170,7 @@ namespace Database.Core
 				});
 
 			var sessionFactory = Fluently.Configure(configuration)
-				.Diagnostics(d => d.Enable(true).OutputToFile(Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), "Desktop", "log.txt")))
-				.Mappings(mappings => mappings.FluentMappings.Add(_mappingType).ExportTo(Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE"), "Desktop")))
+				.Mappings(mappings => mappings.FluentMappings.Add(_mappingType))
 				.BuildSessionFactory();
 
 			return sessionFactory;

@@ -16,11 +16,7 @@ namespace Database.Core
 	public static class DynamicAssemblyManager
 	{
 		//private static readonly Lazy<string> LazyDllName = new Lazy<string>(() => String.Format("{0}.dll", AssemblyName.Name), LazyThreadSafetyMode.ExecutionAndPublication);
-		//private static string DllName {get { return LazyDllName.Value; }}
-
-		private static readonly MethodInfo ObjectEqualsMethod = typeof (object).GetMethod("Equals", new[] { typeof (object) });
-		private static readonly MethodInfo ObjectReferenceEqualsMethod = typeof (object).GetMethod("ReferenceEquals", new[] { typeof (object), typeof (object) });
-		private static readonly MethodInfo ObjectGetHashCodeMethod = typeof (object).GetMethod("GetHashCode", Type.EmptyTypes);
+		//private static string DllName { get { return LazyDllName.Value; } }
 
 		private static readonly MethodInfo ParameterExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Parameter(null, null));
 		private static readonly MethodInfo PropertyExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Property(null, (MethodInfo)null));
@@ -122,56 +118,27 @@ namespace Database.Core
 					{
 						var typeBuilder = ModuleBuilder.DefineType(entityName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Serializable);
 
-						var identityColumns = new List<ColumnDefinition>();
+						var identityProperties = new List<PropertyInfo>();
 
 						foreach (var column in columns)
 						{
+							var property = typeBuilder.DefineProperty(column.Name, column.Type);
+
 							if (column.IsPrimaryKeyColumn)
 							{
-								identityColumns.Add(column);
+								identityProperties.Add(property);
 							}
-
-							typeBuilder.DefineProperty(column.Name, column.Type);
 						}
 
-						if (identityColumns.Count > 0)
+						if (identityProperties.Count > 0)
 						{
-							if (identityColumns.Count > 1)
+							typeBuilder.DefineGetHashCodeMethod(identityProperties);
+
+							if (identityProperties.Count > 1)
 							{
-								// TODO: get this to work gooder
+								var virtualEqualsMethod = typeBuilder.DefineVirtualEqualsMethod(identityProperties);
 
-								//var equalsOverride = typeBuilder.DefineMethod("Equals", MethodAttributes.Public | MethodAttributes.HideBySig, typeof (bool), new[] { typeof (object) });
-
-								//var equalsOverrideIntermediateLanguageGenerator = equalsOverride.GetILGenerator();
-
-								//var compareToNull = equalsOverrideIntermediateLanguageGenerator.DefineLabel();
-								//var endOfMethod = equalsOverrideIntermediateLanguageGenerator.DefineLabel();
-
-								//equalsOverrideIntermediateLanguageGenerator.DeclareLocal(typeof (bool));
-								//equalsOverrideIntermediateLanguageGenerator.DeclareLocal(typeof(bool));
-
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldnull);
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldarg_1);
-
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Call, ObjectReferenceEqualsMethod);
-
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldc_I4_0);
-
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ceq);
-
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Stloc_1);
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldloc_1);
-
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Brtrue_S, compareToNull);
-
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Ldc_I4_0);
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Stloc_0);
-
-								//equalsOverrideIntermediateLanguageGenerator.Emit(OpCodes.Br_S, endOfMethod);
-
-								//equalsOverrideIntermediateLanguageGenerator.MarkLabel(compareToNull);
-
-								//typeBuilder.DefineMethodOverride(equalsOverride, ObjectEqualsMethod);
+								//typeBuilder.DefineOverrideEqualsMethod(virtualEqualsMethod, identityProperties);
 							}
 						}
 						else
