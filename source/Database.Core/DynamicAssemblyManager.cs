@@ -138,7 +138,7 @@ namespace Database.Core
 							{
 								var virtualEqualsMethod = typeBuilder.DefineVirtualEqualsMethod(identityProperties);
 
-								//typeBuilder.DefineOverrideEqualsMethod(virtualEqualsMethod, identityProperties);
+								typeBuilder.DefineOverrideEqualsMethod(virtualEqualsMethod, identityProperties);
 							}
 						}
 						else

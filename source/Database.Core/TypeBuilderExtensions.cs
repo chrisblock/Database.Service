@@ -11,7 +11,7 @@ namespace Database.Core
 		private const MethodAttributes PublicVirtualHideBySig = MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig;
 		private const MethodAttributes PublicVirtualHideBySigSpecialName = PublicVirtualHideBySig | MethodAttributes.SpecialName;
 
-		private static readonly MethodInfo TypeInequalityOperator = typeof (Type).GetMethod("op_Inequality", new[] { typeof (Type), typeof (Type) });
+		private static readonly MethodInfo TypeEqualityOperator = typeof (Type).GetMethod("op_Equality", new[] { typeof (Type), typeof (Type) });
 
 		private static readonly MethodInfo ObjectEqualsMethod = typeof (object).GetMethod("Equals", new[] { typeof (object) });
 		private static readonly MethodInfo ObjectGetTypeMethod = typeof (object).GetMethod("GetType", Type.EmptyTypes);
@@ -146,9 +146,6 @@ namespace Database.Core
 			il.Emit(OpCodes.Ldarg_1);
 			il.Emit(OpCodes.Call, ObjectStaticReferenceEqualsMethod);
 
-			il.Emit(OpCodes.Ldc_I4_1);
-			il.Emit(OpCodes.Ceq);
-
 			il.Emit(OpCodes.Brtrue_S, returnLocalZero);
 
 			il.Emit(OpCodes.Ldarg_0);
@@ -201,12 +198,8 @@ namespace Database.Core
 
 			var il = method.GetILGenerator();
 
-			var referenceEqualThisAndArgument = il.DefineLabel();
-			var compareTypeEquality = il.DefineLabel();
-			var castAndCallVirtualEquals = il.DefineLabel();
 			var returnLocalVariableZero = il.DefineLabel();
 
-			il.DeclareLocal(typeof(bool));
 			il.DeclareLocal(typeof(bool));
 
 			//
@@ -217,47 +210,21 @@ namespace Database.Core
 
 			il.Emit(OpCodes.Call, ObjectStaticReferenceEqualsMethod);
 
-			il.Emit(OpCodes.Ldc_I4_0);
-
-			il.Emit(OpCodes.Ceq);
-
-			il.Emit(OpCodes.Stloc_1);
-			il.Emit(OpCodes.Ldloc_1);
-
-			il.Emit(OpCodes.Brtrue_S, referenceEqualThisAndArgument);
-
-			il.Emit(OpCodes.Nop);
-
-			il.Emit(OpCodes.Ldc_I4_0);
-			il.Emit(OpCodes.Stloc_0);
-
-			il.Emit(OpCodes.Br_S, returnLocalVariableZero);
+			il.Emit(OpCodes.Brtrue_S, returnLocalVariableZero);
 
 			//
 			// ReferenceEquals(this, obj)
 			//
-			il.MarkLabel(referenceEqualThisAndArgument);
 
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Ldarg_1);
 
 			il.Emit(OpCodes.Call, ObjectStaticReferenceEqualsMethod);
 
-			il.Emit(OpCodes.Ldc_I4_0);
-
-			il.Emit(OpCodes.Ceq);
-
-			il.Emit(OpCodes.Stloc_1);
-			il.Emit(OpCodes.Ldloc_1);
-
-			il.Emit(OpCodes.Brtrue_S, compareTypeEquality);
-
-			il.Emit(OpCodes.Nop);
-
-			il.Emit(OpCodes.Ldc_I4_1);
 			il.Emit(OpCodes.Stloc_0);
+			il.Emit(OpCodes.Ldloc_0);
 
-			il.Emit(OpCodes.Br_S, returnLocalVariableZero);
+			il.Emit(OpCodes.Brtrue_S, returnLocalVariableZero);
 
 			//
 			// obj.GetType() != typeof (<TYPE>)
@@ -269,23 +236,9 @@ namespace Database.Core
 			il.Emit(OpCodes.Ldtoken, typeBuilder);
 			il.Emit(OpCodes.Call, GetTypeFromHandleMethod);
 
-			il.Emit(OpCodes.Call, TypeInequalityOperator);
+			il.Emit(OpCodes.Call, TypeEqualityOperator);
 
-			il.Emit(OpCodes.Ldc_I4_0);
-
-			il.Emit(OpCodes.Ceq);
-
-			il.Emit(OpCodes.Stloc_1);
-			il.Emit(OpCodes.Ldloc_1);
-
-			il.Emit(OpCodes.Brtrue_S, castAndCallVirtualEquals);
-
-			il.Emit(OpCodes.Nop);
-
-			il.Emit(OpCodes.Ldc_I4_0);
-			il.Emit(OpCodes.Stloc_0);
-
-			il.Emit(OpCodes.Br_S, returnLocalVariableZero);
+			il.Emit(OpCodes.Brfalse_S, returnLocalVariableZero);
 
 			//
 			// Equals((<TYPE>) obj)
@@ -297,6 +250,8 @@ namespace Database.Core
 			il.Emit(OpCodes.Castclass, typeBuilder);
 
 			il.Emit(OpCodes.Call, virtualEqualsMethod);
+
+			il.Emit(OpCodes.Stloc_0);
 
 			//
 			// return
