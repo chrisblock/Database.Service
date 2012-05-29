@@ -134,8 +134,6 @@ namespace Database.Core
 		{
 			var method = typeBuilder.DefineMethod("Equals", PublicVirtualHideBySig | MethodAttributes.Virtual, typeof(bool), new Type[] { typeBuilder });
 
-			// TODO: define virtual Equals(<TYPE>) method
-
 			var il = method.GetILGenerator();
 
 			var returnLocalZero = il.DefineLabel();
