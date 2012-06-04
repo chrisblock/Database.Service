@@ -38,11 +38,11 @@ namespace Database.Service.Controllers
 			return Get(Environment.MachineName, databaseName, tableName);
 		}
 
-		private HttpResponseMessage<IEnumerable<T>> Get<T>(Query query) where T : class
+		private HttpResponseMessage Get<T>(Query query) where T : class
 		{
 			IEnumerable<T> result = query.Execute<T>();
 
-			var response = new HttpResponseMessage<IEnumerable<T>>(result, HttpStatusCode.OK);
+			var response = Request.CreateResponse(HttpStatusCode.OK, result);
 
 			return response;
 		}

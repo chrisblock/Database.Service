@@ -51,15 +51,22 @@
   <ItemGroup>
     <Compile Include="DbTransactionExtensions.cs" />
     <Compile Include="DynamicAssemblyManager.cs" />
-    <Compile Include="ColumnDefinition.cs" />
     <Compile Include="Connect.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="ReflectionUtility.cs" />
     <Compile Include="DbCommandExtensions.cs" />
     <Compile Include="DbConnectionExtensions.cs" />
-    <Compile Include="TableDefinition.cs" />
+    <Compile Include="TableReflection\ColumnDefinition.cs" />
+    <Compile Include="TableReflection\Impl\SqlServerTableReflector.cs" />
+    <Compile Include="TableReflection\ITableReflector.cs" />
+    <Compile Include="TableReflection\TableDefinition.cs" />
     <Compile Include="TypeBuilderExtensions.cs" />
+    <Compile Include="TypeBuilding\IDynamicAssemblyBuilder.cs" />
+    <Compile Include="TypeBuilding\Impl\MapTypeBuilder.cs" />
+    <Compile Include="TypeBuilding\ITypeBuilder.cs" />
+    <Compile Include="TypeBuilding\Impl\DynamicAssemblyBuilder.cs" />
+    <Compile Include="TypeBuilding\Impl\EntityTypeBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -29,6 +29,16 @@ namespace Database.Core
 			return _connectionStringBuilder.ToString();
 		}
 
+		public string GetServerName()
+		{
+			return _connectionStringBuilder.DataSource;
+		}
+
+		public string GetDatabaseName()
+		{
+			return _connectionStringBuilder.InitialCatalog;
+		}
+
 		public static Connect To(SqlConnectionStringBuilder connectionStringBuilder)
 		{
 			if (String.IsNullOrWhiteSpace(connectionStringBuilder.DataSource))

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Database.Core.TableReflection;
+
 using NUnit.Framework;
 
 namespace Database.Core.Tests
