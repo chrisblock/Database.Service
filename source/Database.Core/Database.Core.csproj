@@ -49,6 +49,8 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Database.cs" />
+    <Compile Include="DatabaseType.cs" />
     <Compile Include="DbTransactionExtensions.cs" />
     <Compile Include="DynamicAssemblyManager.cs" />
     <Compile Include="Connect.cs" />
@@ -58,6 +60,8 @@
     <Compile Include="DbCommandExtensions.cs" />
     <Compile Include="DbConnectionExtensions.cs" />
     <Compile Include="TableReflection\ColumnDefinition.cs" />
+    <Compile Include="TableReflection\IConnectionStringFactory.cs" />
+    <Compile Include="TableReflection\Impl\SqlServerConnectionStringFactory.cs" />
     <Compile Include="TableReflection\Impl\SqlServerTableReflector.cs" />
     <Compile Include="TableReflection\ITableReflector.cs" />
     <Compile Include="TableReflection\TableDefinition.cs" />

@@ -1,69 +1,47 @@
 ﻿using System;
-using System.Data.SqlClient;
 
 namespace Database.Core
 {
 	public class Connect
 	{
-		private readonly SqlConnectionStringBuilder _connectionStringBuilder;
+		private readonly Database _database;
 
-		private Connect(SqlConnectionStringBuilder connectionStringBuilder)
+		private Connect(Database database)
 		{
-			_connectionStringBuilder = connectionStringBuilder;
+			_database = database;
 		}
 
 		public Query CreateQuery(string tableName)
 		{
-			var query = new Query(this, tableName);
+			var query = new Query(_database, tableName);
 
 			return query;
 		}
 
-		public SqlConnection Create()
+		public static Connect To(Database database)
 		{
-			return new SqlConnection(_connectionStringBuilder.ToString());
-		}
-
-		public string GetConnectionString()
-		{
-			return _connectionStringBuilder.ToString();
-		}
-
-		public string GetServerName()
-		{
-			return _connectionStringBuilder.DataSource;
-		}
-
-		public string GetDatabaseName()
-		{
-			return _connectionStringBuilder.InitialCatalog;
-		}
-
-		public static Connect To(SqlConnectionStringBuilder connectionStringBuilder)
-		{
-			if (String.IsNullOrWhiteSpace(connectionStringBuilder.DataSource))
+			if (String.IsNullOrWhiteSpace(database.ServerName))
 			{
 				throw new ArgumentException(String.Format("Cannot connect with an invalid server name."));
 			}
 
-			if (String.IsNullOrWhiteSpace(connectionStringBuilder.InitialCatalog))
+			if (String.IsNullOrWhiteSpace(database.DatabaseName))
 			{
 				throw new ArgumentException(String.Format("Cannot connect with an invalid database name."));
 			}
 
-			return new Connect(connectionStringBuilder);
+			return new Connect(database);
 		}
 
 		public static Connect To(string serverName, string databaseName)
 		{
-			var connectionStringBuilder = new SqlConnectionStringBuilder
+			var database = new Database
 			{
-				DataSource = serverName,
-				InitialCatalog = databaseName,
-				IntegratedSecurity = true
+				ServerName = serverName,
+				DatabaseName = databaseName
 			};
 
-			return To(connectionStringBuilder);
+			return To(database);
 		}
 
 		public static Connect To(string databaseName)
@@ -73,12 +51,12 @@ namespace Database.Core
 
 		public override string ToString()
 		{
-			return GetConnectionString();
+			return _database.ToString();
 		}
 
 		public override int GetHashCode()
 		{
-			return String.Format("ConnectionString:{0};", GetConnectionString()).GetHashCode();
+			return String.Format("Database:{0};", _database).GetHashCode();
 		}
 	}
 }

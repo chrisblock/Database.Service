@@ -16,19 +16,20 @@ namespace Database.Core
 {
 	public class Query
 	{
+		private readonly IConnectionStringFactory _connectionStringFactory = new SqlServerConnectionStringFactory();
 		private readonly ITableReflector _tableReflector = new SqlServerTableReflector();
 
-		private readonly Connect _connect;
+		private readonly Database _database;
 		private readonly string _tableName;
 		private readonly Type _entityType;
 		private readonly Type _mappingType;
 
-		public Query(Connect connect, string tableName)
+		public Query(Database database, string tableName)
 		{
-			_connect = connect;
+			_database = database;
 			_tableName = tableName;
 
-			var tableDefinition = _tableReflector.GetTableDefinition(_connect.GetServerName(), _connect.GetDatabaseName(), _tableName);
+			var tableDefinition = _tableReflector.GetTableDefinition(_database.ServerName, _database.DatabaseName, _tableName);
 
 			var types = DynamicAssemblyManager.BuildTypesForTable(tableDefinition);
 
@@ -46,11 +47,6 @@ namespace Database.Core
 			return _mappingType;
 		}
 
-		public string GetConnectionString()
-		{
-			return _connect.GetConnectionString();
-		}
-
 		private ISessionFactory BuildSessionFactory()
 		{
 			var configuration = new Configuration()
@@ -58,7 +54,7 @@ namespace Database.Core
 				{
 					x.Dialect<MsSql2008Dialect>();
 					x.Driver<SqlClientDriver>();
-					x.ConnectionString = GetConnectionString();
+					x.ConnectionString = _connectionStringFactory.Create(_database);
 				});
 
 			var sessionFactory = Fluently.Configure(configuration)
@@ -76,7 +72,7 @@ namespace Database.Core
 			{
 				using (var session = sessionFactory.OpenStatelessSession())
 				{
-					// TODO: some kind of conversation pattern for unit-of-work management so the actual NHibernate IQueryable can be returned
+					// TODO: some kind of per-request pattern for unit-of-work management so the actual NHibernate IQueryable can be returned
 					result = session.Query<T>()
 						.ToList()
 						.AsQueryable();
