@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using Database.Core.TableReflection;
@@ -33,7 +34,7 @@ namespace Database.Core.TypeBuilding.Impl
 				}
 			}
 
-			if (identityProperties.Count > 0)
+			if (identityProperties.Any())
 			{
 				// TODO: i don't think these three methods should be extension methods...
 				typeBuilder.DefineGetHashCodeMethod(identityProperties);

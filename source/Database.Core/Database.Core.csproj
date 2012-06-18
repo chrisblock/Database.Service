@@ -61,8 +61,10 @@
     <Compile Include="DbConnectionExtensions.cs" />
     <Compile Include="TableReflection\ColumnDefinition.cs" />
     <Compile Include="TableReflection\IConnectionStringFactory.cs" />
+    <Compile Include="TableReflection\Impl\ConnectionStringFactory.cs" />
     <Compile Include="TableReflection\Impl\SqlServerConnectionStringFactory.cs" />
     <Compile Include="TableReflection\Impl\SqlServerTableReflector.cs" />
+    <Compile Include="TableReflection\Impl\TableReflector.cs" />
     <Compile Include="TableReflection\ITableReflector.cs" />
     <Compile Include="TableReflection\TableDefinition.cs" />
     <Compile Include="TypeBuilderExtensions.cs" />

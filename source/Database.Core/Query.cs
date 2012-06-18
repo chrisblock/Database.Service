@@ -16,8 +16,8 @@ namespace Database.Core
 {
 	public class Query
 	{
-		private readonly IConnectionStringFactory _connectionStringFactory = new SqlServerConnectionStringFactory();
-		private readonly ITableReflector _tableReflector = new SqlServerTableReflector();
+		private readonly IConnectionStringFactory _connectionStringFactory = new ConnectionStringFactory();
+		private readonly ITableReflector _tableReflector = new TableReflector();
 
 		private readonly Database _database;
 		private readonly string _tableName;
@@ -29,7 +29,7 @@ namespace Database.Core
 			_database = database;
 			_tableName = tableName;
 
-			var tableDefinition = _tableReflector.GetTableDefinition(_database.ServerName, _database.DatabaseName, _tableName);
+			var tableDefinition = _tableReflector.GetTableDefinition(_database, _tableName);
 
 			var types = DynamicAssemblyManager.BuildTypesForTable(tableDefinition);
 

@@ -62,11 +62,11 @@ namespace Database.Core.TableReflection.Impl
 			return new SqlConnection(connectionString.ToString());
 		}
 
-		public TableDefinition GetTableDefinition(string serverName, string databaseName, string tableName)
+		public TableDefinition GetTableDefinition(Database database, string tableName)
 		{
 			var columns = new List<ColumnDefinition>();
 
-			using (var connection = CreateConnection(serverName, databaseName))
+			using (var connection = CreateConnection(database.ServerName, database.DatabaseName))
 			{
 				connection.Open();
 
