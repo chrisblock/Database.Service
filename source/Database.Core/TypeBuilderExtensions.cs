@@ -9,7 +9,7 @@ namespace Database.Core
 	public static class TypeBuilderExtensions
 	{
 		private const MethodAttributes PublicVirtualHideBySig = MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig;
-		private const MethodAttributes PublicVirtualHideBySigSpecialName = PublicVirtualHideBySig | MethodAttributes.SpecialName;
+		private const MethodAttributes PublicVirtualHideBySigNewSlotSpecialName = PublicVirtualHideBySig | MethodAttributes.NewSlot | MethodAttributes.SpecialName;
 
 		private static readonly MethodInfo TypeEqualityOperator = typeof (Type).GetMethod("op_Equality", new[] { typeof (Type), typeof (Type) });
 
@@ -26,17 +26,23 @@ namespace Database.Core
 
 		public static PropertyBuilder DefineProperty(this TypeBuilder typeBuilder, string propertyName, Type propertyType)
 		{
-			var backingFieldBuilder = typeBuilder.DefineField(String.Format("_{0}", propertyName), propertyType, FieldAttributes.Private);
+			// TODO: is FieldAttributes.PrivateScope necessary??
+			var backingFieldBuilder = typeBuilder.DefineField(String.Format("<{0}>k__BackingField", propertyName), propertyType, FieldAttributes.Private);
 
 			// The last argument of DefineProperty is null, because the
 			// property has no parameters. (If you don't specify null, you must
 			// specify an array of Type objects. For a parameterless property,
 			// use an array with no elements: new Type[] {})
-			var propertyBuilder = typeBuilder.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, Type.EmptyTypes);
+			// TODO: should we use PropertyAttributes.HasDefault??
+			var propertyBuilder = typeBuilder.DefineProperty(propertyName, PropertyAttributes.None, CallingConventions.HasThis, propertyType, Type.EmptyTypes);
 
-			var propertyGetMethodBuilder = typeBuilder.DefineGetMethod(propertyName, propertyType, PublicVirtualHideBySigSpecialName, backingFieldBuilder);
+			//var customAttributeBuilder = new CustomAttributeBuilder(typeof(DataContractAttribute))
 
-			var propertySetMethodBuilder = typeBuilder.DefineSetMethod(propertyName, propertyType, PublicVirtualHideBySigSpecialName, backingFieldBuilder);
+			//propertyBuilder.SetCustomAttribute();
+
+			var propertyGetMethodBuilder = typeBuilder.DefineGetMethod(propertyName, propertyType, PublicVirtualHideBySigNewSlotSpecialName, backingFieldBuilder);
+
+			var propertySetMethodBuilder = typeBuilder.DefineSetMethod(propertyName, propertyType, PublicVirtualHideBySigNewSlotSpecialName, backingFieldBuilder);
 
 			propertyBuilder.SetGetMethod(propertyGetMethodBuilder);
 			propertyBuilder.SetSetMethod(propertySetMethodBuilder);
@@ -44,7 +50,7 @@ namespace Database.Core
 			return propertyBuilder;
 		}
 
-		private static MethodBuilder DefineGetMethod(this TypeBuilder typeBuilder, string propertyName, Type propertyType, MethodAttributes methodAttributes, FieldBuilder backingFieldBuilder)
+		private static MethodBuilder DefineGetMethod(this TypeBuilder typeBuilder, string propertyName, Type propertyType, MethodAttributes methodAttributes, FieldInfo backingFieldBuilder)
 		{
 			var propertyGetMethodBuilder = typeBuilder.DefineMethod(String.Format("get_{0}", propertyName), methodAttributes, propertyType, Type.EmptyTypes);
 
@@ -57,7 +63,7 @@ namespace Database.Core
 			return propertyGetMethodBuilder;
 		}
 
-		private static MethodBuilder DefineSetMethod(this TypeBuilder typeBuilder, string propertyName, Type propertyType, MethodAttributes methodAttributes, FieldBuilder backingFieldBuilder)
+		private static MethodBuilder DefineSetMethod(this TypeBuilder typeBuilder, string propertyName, Type propertyType, MethodAttributes methodAttributes, FieldInfo backingFieldBuilder)
 		{
 			var propertySetMethodBuilder = typeBuilder.DefineMethod(String.Format("set_{0}", propertyName), methodAttributes, null, new[] { propertyType });
 

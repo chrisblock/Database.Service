@@ -56,7 +56,7 @@ namespace Database.Core.TypeBuilding.Impl
 			var mapMethod = baseClassType.GetMethod("Map", new[] { filledExpressionType });
 			var idMethod = baseClassType.GetMethod("Id", new[] { filledExpressionType });
 
-			var typeBuilder = _dynamicAssemblyBuilder.BuildType(mapName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.Serializable, baseClassType);
+			var typeBuilder = _dynamicAssemblyBuilder.BuildType(mapName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, baseClassType);
 
 			var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, Type.EmptyTypes);
 

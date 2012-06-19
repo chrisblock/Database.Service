@@ -27,6 +27,8 @@ namespace Database.Core
 			var entityType = BuildEntityType(table);
 			var mappingType = BuildMappingType(table);
 
+			DynamicAssemblyBuilder.Save();
+
 			return new Tuple<Type, Type>(entityType, mappingType);
 		}
 

@@ -96,12 +96,15 @@ namespace Database.Core.TypeBuilding.Impl
 				? _moduleBuilder.DefineType(typeName, typeAttributes)
 				: _moduleBuilder.DefineType(typeName, typeAttributes, baseClassType);
 
+			return result;
+		}
+
+		public void Save()
+		{
 			if (SaveAssemblyToDisk)
 			{
 				_assemblyBuilder.Save(_dllName);
 			}
-
-			return result;
 		}
 	}
 }

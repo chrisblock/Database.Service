@@ -52,6 +52,11 @@ namespace Database.Core.TableReflection.Impl
 			};
 		}
 
+		private static bool IsMultiByteCharacterColumn(string typeName)
+		{
+			return (typeName == "nchar") || (typeName == "ntext") || (typeName == "nvarchar");
+		}
+
 		private readonly IConnectionStringFactory _connectionStringFactory;
 
 		public SqlServerTableReflector(IConnectionStringFactory connectionStringFactory)
@@ -64,6 +69,31 @@ namespace Database.Core.TableReflection.Impl
 			var connectionString = _connectionStringFactory.Create(database);
 
 			return new SqlConnection(connectionString);
+		}
+
+		private static Type DetermineColumnType(string sqlTypeName, bool isNullable, short length, byte precision, byte scale)
+		{
+			var len = IsMultiByteCharacterColumn(sqlTypeName)
+				? length >> 2
+				: length;
+
+			Type result;
+			if (TypeMapping.TryGetValue(sqlTypeName, out result) == false)
+			{
+				throw new ArgumentException(String.Format("Type '{0}' is not a recognized SQL system type.", sqlTypeName));
+			}
+
+			if ((result == typeof(string)) && (len == 1))
+			{
+				result = typeof(char);
+			}
+
+			if (result.IsValueType && isNullable)
+			{
+				result = OpenGenericNullableType.MakeGenericType(result);
+			}
+
+			return result;
 		}
 
 		public TableDefinition GetTableDefinition(Database database, string tableName)
@@ -81,6 +111,7 @@ namespace Database.Core.TableReflection.Impl
 					commandTextBuilder.AppendLine("SELECT");
 					commandTextBuilder.AppendLine("      [columns].[name] AS [Name]");
 					commandTextBuilder.AppendLine("    , [types].[name] AS [Type]");
+					commandTextBuilder.AppendLine("    , [columns].[max_length] AS [Length]");
 					commandTextBuilder.AppendLine("    , [types].[precision] AS [Precision]");
 					commandTextBuilder.AppendLine("    , [types].[scale] AS [Scale]");
 					commandTextBuilder.AppendLine("    , ISNULL([indexes].[is_primary_key], 0) AS [IsPrimaryKey]");
@@ -101,21 +132,13 @@ namespace Database.Core.TableReflection.Impl
 						{
 							var columnName = (string)reader["Name"];
 							var type = (string)reader["Type"];
-							//var precision = (byte) reader["Precision"];
-							//var scale = (byte)reader["Scale"];
+							var length = (short) reader["Length"];
+							var precision = (byte) reader["Precision"];
+							var scale = (byte)reader["Scale"];
 							var isPrimaryKey = (bool)reader["IsPrimaryKey"];
 							var isNullable = (bool)reader["IsNullable"];
 
-							Type columnType;
-							if (TypeMapping.TryGetValue(type, out columnType) == false)
-							{
-								throw new ArgumentException(String.Format("Type '{0}' is not a recognized SQL system type.", type));
-							}
-
-							if (columnType.IsValueType && isNullable)
-							{
-								columnType = OpenGenericNullableType.MakeGenericType(columnType);
-							}
+							var columnType = DetermineColumnType(type, isNullable, length, precision, scale);
 
 							var column = new ColumnDefinition
 							{

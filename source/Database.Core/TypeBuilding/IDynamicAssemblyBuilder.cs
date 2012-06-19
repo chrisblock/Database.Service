@@ -9,5 +9,6 @@ namespace Database.Core.TypeBuilding
 		string BuildAssemblyQualifiedTypeName(string className);
 		Type GetBuiltType(string typeName);
 		TypeBuilder BuildType(string typeName, TypeAttributes typeAttributes, Type baseClassType = null);
+		void Save();
 	}
 }

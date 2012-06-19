@@ -9,8 +9,8 @@ namespace Database.Core.Querying.Impl
 	{
 		private readonly IFluentConfigurationFactory _fluentConfigurationFactory;
 
-		private static readonly ConcurrentDictionary<Type, FluentConfiguration> ConfigurationCache = new ConcurrentDictionary<Type, FluentConfiguration>();
-		private static readonly ConcurrentDictionary<Database, FluentConfiguration> Configurations = new ConcurrentDictionary<Database, FluentConfiguration>();
+		private static readonly ConcurrentDictionary<Type, FluentConfiguration> ConfigurationsByType = new ConcurrentDictionary<Type, FluentConfiguration>();
+		private static readonly ConcurrentDictionary<Database, FluentConfiguration> ConfigurationsByDatabase = new ConcurrentDictionary<Database, FluentConfiguration>();
 
 		private static readonly object Locker = new object();
 
@@ -21,28 +21,28 @@ namespace Database.Core.Querying.Impl
 
 		public FluentConfiguration GetConfigurationFor(Database database, Type mappingType)
 		{
-			if (ConfigurationCache.ContainsKey(mappingType) == false)
+			if (ConfigurationsByType.ContainsKey(mappingType) == false)
 			{
 				// TODO: add another lock to lock each dictionary seperately..? may cause deadlock? seems useless since their usage would be nested...
 				lock (Locker)
 				{
-					if (ConfigurationCache.ContainsKey(mappingType) == false)
+					if (ConfigurationsByType.ContainsKey(mappingType) == false)
 					{
-						if (Configurations.ContainsKey(database) == false)
+						if (ConfigurationsByDatabase.ContainsKey(database) == false)
 						{
-							Configurations[database] = _fluentConfigurationFactory.Create(database);
+							ConfigurationsByDatabase[database] = _fluentConfigurationFactory.Create(database);
 						}
 
-						var configuration = Configurations[database];
+						var configuration = ConfigurationsByDatabase[database];
 
-						ConfigurationCache[mappingType] = configuration;
+						ConfigurationsByType[mappingType] = configuration;
 
 						configuration.Mappings(mappings => mappings.FluentMappings.Add(mappingType));
 					}
 				}
 			}
 
-			return ConfigurationCache[mappingType];
+			return ConfigurationsByType[mappingType];
 		}
 	}
 }
