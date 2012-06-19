@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Database.Core.TableReflection.Impl
+namespace Database.Core.Querying.Impl
 {
 	public class ConnectionStringFactory : IConnectionStringFactory
 	{
@@ -27,7 +25,7 @@ namespace Database.Core.TableReflection.Impl
 			IConnectionStringFactory connectionStringFactory;
 			if (_connectionStringFactories.TryGetValue(database.DatabaseType, out connectionStringFactory) == false)
 			{
-				throw new ArgumentException(String.Format("No IConnectionStringFactory defined for database type '{0}'.", database.DatabaseType));
+				throw new ArgumentException(String.Format("No IConnectionStringFactory defined for database type '{0}'.", (object) database.DatabaseType));
 			}
 
 			return connectionStringFactory.Create(database);

@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
 using System.Xml.Linq;
+
+using Database.Core.Querying;
 
 namespace Database.Core.TableReflection.Impl
 {
@@ -50,23 +52,25 @@ namespace Database.Core.TableReflection.Impl
 			};
 		}
 
-		private static IDbConnection CreateConnection(string serverName, string databaseName)
-		{
-			var connectionString = new SqlConnectionStringBuilder
-			{
-				DataSource = serverName,
-				InitialCatalog = databaseName,
-				IntegratedSecurity = true
-			};
+		private readonly IConnectionStringFactory _connectionStringFactory;
 
-			return new SqlConnection(connectionString.ToString());
+		public SqlServerTableReflector(IConnectionStringFactory connectionStringFactory)
+		{
+			_connectionStringFactory = connectionStringFactory;
+		}
+
+		private IDbConnection CreateConnection(Database database)
+		{
+			var connectionString = _connectionStringFactory.Create(database);
+
+			return new SqlConnection(connectionString);
 		}
 
 		public TableDefinition GetTableDefinition(Database database, string tableName)
 		{
 			var columns = new List<ColumnDefinition>();
 
-			using (var connection = CreateConnection(database.ServerName, database.DatabaseName))
+			using (var connection = CreateConnection(database))
 			{
 				connection.Open();
 

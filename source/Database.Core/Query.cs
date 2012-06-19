@@ -1,23 +1,20 @@
 using System;
 using System.Linq;
 
+using Database.Core.Querying;
+using Database.Core.Querying.Impl;
 using Database.Core.TableReflection;
 using Database.Core.TableReflection.Impl;
 
-using FluentNHibernate.Cfg;
-
 using NHibernate;
-using NHibernate.Cfg;
-using NHibernate.Dialect;
-using NHibernate.Driver;
 using NHibernate.Linq;
 
 namespace Database.Core
 {
 	public class Query
 	{
-		private readonly IConnectionStringFactory _connectionStringFactory = new ConnectionStringFactory();
 		private readonly ITableReflector _tableReflector = new TableReflector();
+		private readonly IFluentConfigurationCache _fluentConfigurationCache = new FluentConfigurationCache(new FluentConfigurationFactory());
 
 		private readonly Database _database;
 		private readonly string _tableName;
@@ -49,16 +46,9 @@ namespace Database.Core
 
 		private ISessionFactory BuildSessionFactory()
 		{
-			var configuration = new Configuration()
-				.DataBaseIntegration(x =>
-				{
-					x.Dialect<MsSql2008Dialect>();
-					x.Driver<SqlClientDriver>();
-					x.ConnectionString = _connectionStringFactory.Create(_database);
-				});
+			var configuration = _fluentConfigurationCache.GetConfigurationFor(_database, _mappingType);
 
-			var sessionFactory = Fluently.Configure(configuration)
-				.Mappings(mappings => mappings.FluentMappings.Add(_mappingType))
+			var sessionFactory = configuration
 				.BuildSessionFactory();
 
 			return sessionFactory;

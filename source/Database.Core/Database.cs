@@ -48,6 +48,7 @@ namespace Database.Core
 			{
 				result = Equals((Database)obj);
 			}
+
 			return result;
 		}
 

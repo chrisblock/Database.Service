@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+
+using Database.Core.Querying.Impl;
 
 namespace Database.Core.TableReflection.Impl
 {
@@ -9,9 +11,11 @@ namespace Database.Core.TableReflection.Impl
 
 		public TableReflector()
 		{
+			var connectionStringFactory = new ConnectionStringFactory();
+
 			_tableReflectors = new Dictionary<DatabaseType, ITableReflector>
 			{
-				{ DatabaseType.SqlServer, new SqlServerTableReflector() }
+				{ DatabaseType.SqlServer, new SqlServerTableReflector(connectionStringFactory) }
 			};
 		}
 
@@ -31,7 +35,7 @@ namespace Database.Core.TableReflection.Impl
 
 			if (_tableReflectors.TryGetValue(database.DatabaseType, out  tableReflector) == false)
 			{
-				throw new ArgumentException(String.Format("No ITableReflector defined for database type '{0}'.", database.DatabaseType));
+				throw new ArgumentException(String.Format("No ITableReflector defined for database type '{0}'.", (object) database.DatabaseType));
 			}
 
 			return tableReflector.GetTableDefinition(database, tableName);

@@ -1,4 +1,4 @@
-﻿namespace Database.Core.TableReflection
+namespace Database.Core.TableReflection
 {
 	public interface ITableReflector
 	{

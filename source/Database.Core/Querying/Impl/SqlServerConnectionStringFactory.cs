@@ -1,4 +1,4 @@
-namespace Database.Core.TableReflection.Impl
+namespace Database.Core.Querying.Impl
 {
 	public class SqlServerConnectionStringFactory : IConnectionStringFactory
 	{
