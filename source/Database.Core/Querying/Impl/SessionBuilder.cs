@@ -50,18 +50,20 @@ namespace Database.Core.Querying.Impl
 
 				throw;
 			}
+			finally
+			{
+				_transaction.Dispose();
 
-			_transaction.Dispose();
+				_session.Flush();
 
-			_session.Flush();
+				_session.Close();
 
-			_session.Close();
+				_session.Dispose();
 
-			_session.Dispose();
-			
-			_sessionFactory.Close();
+				_sessionFactory.Close();
 
-			_sessionFactory.Dispose();
+				_sessionFactory.Dispose();
+			}
 		}
 	}
 }
