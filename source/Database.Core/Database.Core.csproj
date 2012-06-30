@@ -41,6 +41,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\NHibernate.3.3.1.4000\lib\Net35\NHibernate.dll</HintPath>
     </Reference>
+    <Reference Include="StructureMap">
+      <HintPath>..\..\lib\structuremap.2.6.3\lib\StructureMap.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -50,35 +53,43 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractFluentConfigurationFactory.cs" />
+    <Compile Include="AssemblyNameExtensions.cs" />
     <Compile Include="Database.cs" />
+    <Compile Include="DatabaseCoreRegistry.cs" />
     <Compile Include="DatabaseType.cs" />
     <Compile Include="DbTransactionExtensions.cs" />
-    <Compile Include="DynamicAssemblyManager.cs" />
-    <Compile Include="Connect.cs" />
-    <Compile Include="FluentConfigurationFactory.cs" />
-    <Compile Include="IFluentConfigurationFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Query.cs" />
+    <Compile Include="Querying\AbstractFluentConfigurationFactory.cs" />
     <Compile Include="Querying\IConnectionStringFactory.cs" />
     <Compile Include="Querying\IFluentConfigurationCache.cs" />
+    <Compile Include="Querying\IFluentConfigurationFactory.cs" />
     <Compile Include="Querying\Impl\ConnectionStringFactory.cs" />
     <Compile Include="Querying\Impl\FluentConfigurationCache.cs" />
+    <Compile Include="Querying\Impl\FluentConfigurationFactory.cs" />
+    <Compile Include="Querying\Impl\QueryExecutor.cs" />
+    <Compile Include="Querying\Impl\SessionBuilder.cs" />
+    <Compile Include="Querying\Impl\SqlServer2008FluentConfigurationFactory.cs" />
     <Compile Include="Querying\Impl\SqlServerConnectionStringFactory.cs" />
+    <Compile Include="Querying\IQueryExecutor.cs" />
+    <Compile Include="Querying\ISessionBuilder.cs" />
     <Compile Include="ReflectionUtility.cs" />
     <Compile Include="DbCommandExtensions.cs" />
     <Compile Include="DbConnectionExtensions.cs" />
-    <Compile Include="SqlServer2008FluentConfigurationFactory.cs" />
     <Compile Include="TableReflection\ColumnDefinition.cs" />
     <Compile Include="TableReflection\Impl\SqlServerTableReflector.cs" />
     <Compile Include="TableReflection\Impl\TableReflector.cs" />
     <Compile Include="TableReflection\ITableReflector.cs" />
     <Compile Include="TableReflection\TableDefinition.cs" />
     <Compile Include="TypeBuilderExtensions.cs" />
-    <Compile Include="TypeBuilding\IDynamicAssemblyBuilder.cs" />
-    <Compile Include="TypeBuilding\Impl\MapTypeBuilder.cs" />
-    <Compile Include="TypeBuilding\ITypeBuilder.cs" />
-    <Compile Include="TypeBuilding\Impl\DynamicAssemblyBuilder.cs" />
+    <Compile Include="TypeBuilding\DynamicAssembly.cs" />
+    <Compile Include="TypeBuilding\EntityTypes.cs" />
+    <Compile Include="TypeBuilding\IDynamicAssemblyManager.cs" />
+    <Compile Include="TypeBuilding\IDynamicAssemblyManagerFactory.cs" />
+    <Compile Include="TypeBuilding\IMappingTypeBuilder.cs" />
+    <Compile Include="TypeBuilding\Impl\DynamicAssemblyManagerFactory.cs" />
+    <Compile Include="TypeBuilding\Impl\MappingTypeBuilder.cs" />
+    <Compile Include="TypeBuilding\IEntityTypeBuilder.cs" />
+    <Compile Include="TypeBuilding\Impl\DynamicAssemblyManager.cs" />
     <Compile Include="TypeBuilding\Impl\EntityTypeBuilder.cs" />
   </ItemGroup>
   <ItemGroup>

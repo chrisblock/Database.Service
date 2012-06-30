@@ -11,7 +11,7 @@ using FluentNHibernate.Mapping;
 
 namespace Database.Core.TypeBuilding.Impl
 {
-	public class MapTypeBuilder : ITypeBuilder
+	public class MappingTypeBuilder : IMappingTypeBuilder
 	{
 		private static readonly MethodInfo ParameterExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Parameter(null, null));
 		private static readonly MethodInfo PropertyExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Property(null, (MethodInfo)null));
@@ -26,19 +26,19 @@ namespace Database.Core.TypeBuilding.Impl
 		private static readonly Type OpenGenericClassMapType = typeof(ClassMap<>);
 		private static readonly Type OpenGenericCompositeIdentityPartType = typeof(CompositeIdentityPart<>);
 
-		private readonly IDynamicAssemblyBuilder _dynamicAssemblyBuilder;
+		private readonly DynamicAssembly _dynamicAssembly;
 
-		public MapTypeBuilder(IDynamicAssemblyBuilder dynamicAssemblyBuilder)
+		public MappingTypeBuilder(DynamicAssembly dynamicAssembly)
 		{
-			_dynamicAssemblyBuilder = dynamicAssemblyBuilder;
+			_dynamicAssembly = dynamicAssembly;
 		}
 
 		// TODO: this method is in need of some love
 		public Type Build(TableDefinition table)
 		{
-			var mapName = _dynamicAssemblyBuilder.BuildAssemblyQualifiedTypeName(table.GetMapName());
+			var mapName = _dynamicAssembly.BuildAssemblyQualifiedTypeName(table.GetMapName());
 
-			var entityType = _dynamicAssemblyBuilder.GetBuiltType(_dynamicAssemblyBuilder.BuildAssemblyQualifiedTypeName(table.GetEntityName()));
+			var entityType = _dynamicAssembly.GetDynamicType(_dynamicAssembly.BuildAssemblyQualifiedTypeName(table.GetEntityName()));
 
 			var baseClassType = OpenGenericClassMapType.MakeGenericType(entityType);
 			var tableFunction = baseClassType.GetMethod("Table");
@@ -56,7 +56,7 @@ namespace Database.Core.TypeBuilding.Impl
 			var mapMethod = baseClassType.GetMethod("Map", new[] { filledExpressionType });
 			var idMethod = baseClassType.GetMethod("Id", new[] { filledExpressionType });
 
-			var typeBuilder = _dynamicAssemblyBuilder.BuildType(mapName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, baseClassType);
+			var typeBuilder = _dynamicAssembly.CreateType(mapName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit, baseClassType);
 
 			var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.HasThis, Type.EmptyTypes);
 

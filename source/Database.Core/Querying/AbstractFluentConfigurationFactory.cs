@@ -1,18 +1,18 @@
-using Database.Core.Querying;
-
 using FluentNHibernate.Cfg;
 
 using NHibernate.Cfg;
 using NHibernate.Dialect;
 using NHibernate.Driver;
 
-namespace Database.Core
+namespace Database.Core.Querying
 {
 	public abstract class AbstractFluentConfigurationFactory<TDialect, TDriver> : IFluentConfigurationFactory
 		where TDialect : Dialect
 		where TDriver : IDriver
 	{
 		protected IConnectionStringFactory ConnectionStringFactory { get; private set; }
+
+		public abstract DatabaseType CompatibleType { get; }
 
 		protected AbstractFluentConfigurationFactory(IConnectionStringFactory connectionStringFactory)
 		{

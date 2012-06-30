@@ -29,16 +29,8 @@ namespace Database.Core
 			// TODO: is FieldAttributes.PrivateScope necessary??
 			var backingFieldBuilder = typeBuilder.DefineField(String.Format("<{0}>k__BackingField", propertyName), propertyType, FieldAttributes.Private);
 
-			// The last argument of DefineProperty is null, because the
-			// property has no parameters. (If you don't specify null, you must
-			// specify an array of Type objects. For a parameterless property,
-			// use an array with no elements: new Type[] {})
 			// TODO: should we use PropertyAttributes.HasDefault??
 			var propertyBuilder = typeBuilder.DefineProperty(propertyName, PropertyAttributes.None, CallingConventions.HasThis, propertyType, Type.EmptyTypes);
-
-			//var customAttributeBuilder = new CustomAttributeBuilder(typeof(DataContractAttribute))
-
-			//propertyBuilder.SetCustomAttribute();
 
 			var propertyGetMethodBuilder = typeBuilder.DefineGetMethod(propertyName, propertyType, PublicVirtualHideBySigNewSlotSpecialName, backingFieldBuilder);
 

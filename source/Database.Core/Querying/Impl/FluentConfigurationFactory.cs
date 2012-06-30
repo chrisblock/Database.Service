@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using FluentNHibernate.Cfg;
 
-namespace Database.Core
+namespace Database.Core.Querying.Impl
 {
 	public class FluentConfigurationFactory : IFluentConfigurationFactory
 	{
@@ -15,6 +15,11 @@ namespace Database.Core
 			{
 				{ DatabaseType.SqlServer, new SqlServer2008FluentConfigurationFactory() }
 			};
+		}
+
+		public DatabaseType CompatibleType
+		{
+			get { throw new NotImplementedException(); }
 		}
 
 		public FluentConfiguration Create(Database database)

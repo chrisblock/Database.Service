@@ -7,20 +7,20 @@ using Database.Core.TableReflection;
 
 namespace Database.Core.TypeBuilding.Impl
 {
-	public class EntityTypeBuilder : ITypeBuilder
+	public class EntityTypeBuilder : IEntityTypeBuilder
 	{
-		private readonly IDynamicAssemblyBuilder _dynamicAssemblyBuilder;
+		private readonly DynamicAssembly _dynamicAssembly;
 
-		public EntityTypeBuilder(IDynamicAssemblyBuilder dynamicAssemblyBuilder)
+		public EntityTypeBuilder(DynamicAssembly dynamicAssembly)
 		{
-			_dynamicAssemblyBuilder = dynamicAssemblyBuilder;
+			_dynamicAssembly = dynamicAssembly;
 		}
 
 		public Type Build(TableDefinition table)
 		{
-			var entityName = _dynamicAssemblyBuilder.BuildAssemblyQualifiedTypeName(table.GetEntityName());
+			var entityName = _dynamicAssembly.BuildAssemblyQualifiedTypeName(table.GetEntityName());
 
-			var typeBuilder = _dynamicAssemblyBuilder.BuildType(entityName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit);
+			var typeBuilder = _dynamicAssembly.CreateType(entityName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit);
 
 			var identityProperties = new List<PropertyInfo>();
 

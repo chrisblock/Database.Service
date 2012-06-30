@@ -1,17 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
 
 using Database.Core;
+using Database.Core.Querying;
+using Database.Core.TableReflection;
+using Database.Core.TypeBuilding;
 
 namespace Database.Service.Controllers
 {
 	public class DatabaseController : ApiController
 	{
-		private static readonly MethodInfo OpenGenericGetMethod = typeof (DatabaseController).GetMethod("Get", BindingFlags.Instance | BindingFlags.NonPublic);
+		private static readonly MethodInfo OpenGenericCreateQueryableMethod = typeof (DatabaseController).GetMethod("CreateQueryable", BindingFlags.Instance | BindingFlags.NonPublic);
+
+		private readonly IQueryExecutor _queryExecutor;
+		private readonly ITableReflector _tableReflector;
+		private readonly IDynamicAssemblyManager _dynamicAssemblyManager;
+
+		public DatabaseController(IQueryExecutor queryExecutor, ITableReflector tableReflector, IDynamicAssemblyManager dynamicAssemblyManager)
+		{
+			_tableReflector = tableReflector;
+			_dynamicAssemblyManager = dynamicAssemblyManager;
+			_queryExecutor = queryExecutor;
+		}
 
 		public HttpResponseMessage Get(string serverName, string instanceName, string databaseName, string tableName)
 		{
@@ -20,17 +33,30 @@ namespace Database.Service.Controllers
 			return Get(serverNameWithInstance, databaseName, tableName);
 		}
 
+		// TODO: QueryableAttribute doesn't seem to work when i return HttpResponseMessage...
+		[Queryable]
 		public HttpResponseMessage Get(string serverName, string databaseName, string tableName)
 		{
-			var connect = Connect.To(serverName, databaseName);
+			var database = new Core.Database
+			{
+				ServerName = serverName,
+				DatabaseName = databaseName,
+				DatabaseType = DatabaseType.SqlServer
+			};
 
-			var query = connect.CreateQuery(tableName);
+			var tableDefinition = _tableReflector.GetTableDefinition(database, tableName);
 
-			var getMethod = OpenGenericGetMethod.MakeGenericMethod(query.GetEntityType());
+			var types = _dynamicAssemblyManager.BuildTypesFor(tableDefinition);
 
-			var result = (HttpResponseMessage) getMethod.Invoke(this, new object[] { query });
+			// doing this some other way (e.g. putting the reflection inside a class and using IQueryable) causes an error
+			// at some point in the pipeline so that the server returns a 500; i believe it is a serialization error
+			// possibly having to do with some kind of XML linking (i've seen errors similar to this about unexpected types
+			// and whatnot)
+			var genericMethod = OpenGenericCreateQueryableMethod.MakeGenericMethod(types.EntityType);
 
-			return result;
+			var response = (HttpResponseMessage) genericMethod.Invoke(this, new object[] { database, types });
+
+			return response;
 		}
 
 		public HttpResponseMessage Get(string databaseName, string tableName)
@@ -38,11 +64,11 @@ namespace Database.Service.Controllers
 			return Get(Environment.MachineName, databaseName, tableName);
 		}
 
-		private HttpResponseMessage Get<T>(Query query) where T : class
+		private HttpResponseMessage CreateQueryable<T>(Core.Database database, EntityTypes types)
 		{
-			IEnumerable<T> result = query.Execute<T>();
+			var queryable = _queryExecutor.Execute<T>(database, types);
 
-			var response = Request.CreateResponse(HttpStatusCode.OK, result);
+			var response = Request.CreateResponse(HttpStatusCode.OK, queryable);
 
 			return response;
 		}

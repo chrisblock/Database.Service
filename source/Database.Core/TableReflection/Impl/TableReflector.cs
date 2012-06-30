@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-using Database.Core.Querying.Impl;
+using Database.Core.Querying;
 
 namespace Database.Core.TableReflection.Impl
 {
@@ -9,10 +9,8 @@ namespace Database.Core.TableReflection.Impl
 	{
 		private readonly IDictionary<DatabaseType, ITableReflector> _tableReflectors;
 
-		public TableReflector()
+		public TableReflector(IConnectionStringFactory connectionStringFactory)
 		{
-			var connectionStringFactory = new ConnectionStringFactory();
-
 			_tableReflectors = new Dictionary<DatabaseType, ITableReflector>
 			{
 				{ DatabaseType.SqlServer, new SqlServerTableReflector(connectionStringFactory) }

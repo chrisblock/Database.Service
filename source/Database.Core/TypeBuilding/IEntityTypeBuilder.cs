@@ -4,7 +4,7 @@ using Database.Core.TableReflection;
 
 namespace Database.Core.TypeBuilding
 {
-	public interface ITypeBuilder
+	public interface IEntityTypeBuilder
 	{
 		Type Build(TableDefinition table);
 	}

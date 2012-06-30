@@ -1,14 +1,17 @@
-﻿using System;
+﻿// ReSharper disable InconsistentNaming
+
+using System;
 using System.Collections.Generic;
 
 using Database.Core.TableReflection;
+using Database.Core.TypeBuilding.Impl;
 
 using NUnit.Framework;
 
 namespace Database.Core.Tests
 {
 	[TestFixture]
-	public class TypeBuildingTests
+	public class EntityTypeBuildingTests
 	{
 		private TableDefinition _tableDefinition;
 		private Type _entityType;
@@ -50,9 +53,13 @@ namespace Database.Core.Tests
 				}
 			};
 
-			var tableTypes = DynamicAssemblyManager.BuildTypesForTable(_tableDefinition);
+			var dynamicAssemblyManagerFactory = new DynamicAssemblyManagerFactory();
 
-			_entityType = tableTypes.Item1;
+			var dynamicAssemblyManager = dynamicAssemblyManagerFactory.Create("TestDynamicAssembly");
+
+			var tableTypes = dynamicAssemblyManager.BuildTypesFor(_tableDefinition);
+
+			_entityType = tableTypes.EntityType;
 		}
 
 		[Test]
