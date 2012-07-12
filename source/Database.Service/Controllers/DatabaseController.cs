@@ -26,6 +26,7 @@ namespace Database.Service.Controllers
 			_queryExecutor = queryExecutor;
 		}
 
+		[Queryable]
 		public HttpResponseMessage Get(string serverName, string instanceName, string databaseName, string tableName)
 		{
 			var serverNameWithInstance = String.Format(@"{0}\{1}", serverName, instanceName);
@@ -33,7 +34,6 @@ namespace Database.Service.Controllers
 			return Get(serverNameWithInstance, databaseName, tableName);
 		}
 
-		// TODO: QueryableAttribute doesn't seem to work when i return HttpResponseMessage...
 		[Queryable]
 		public HttpResponseMessage Get(string serverName, string databaseName, string tableName)
 		{
@@ -59,6 +59,7 @@ namespace Database.Service.Controllers
 			return response;
 		}
 
+		[Queryable]
 		public HttpResponseMessage Get(string databaseName, string tableName)
 		{
 			return Get(Environment.MachineName, databaseName, tableName);
