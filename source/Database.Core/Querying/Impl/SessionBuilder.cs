@@ -39,6 +39,8 @@ namespace Database.Core.Querying.Impl
 		{
 			try
 			{
+				_session.Flush();
+
 				_transaction.Commit();
 			}
 			catch (Exception)
@@ -52,15 +54,13 @@ namespace Database.Core.Querying.Impl
 			}
 			finally
 			{
-				_transaction.Dispose();
-
-				_session.Flush();
-
 				_session.Close();
 
-				_session.Dispose();
-
 				_sessionFactory.Close();
+
+				_transaction.Dispose();
+
+				_session.Dispose();
 
 				_sessionFactory.Dispose();
 			}
