@@ -9,11 +9,12 @@ namespace Database.Core.TableReflection.Impl
 	{
 		private readonly IDictionary<DatabaseType, ITableReflector> _tableReflectors;
 
-		public TableReflector(IConnectionStringFactory connectionStringFactory)
+		public TableReflector(IConnectionStringFactory connectionStringFactory, ITypeNameMapper typeNameMapper)
 		{
 			_tableReflectors = new Dictionary<DatabaseType, ITableReflector>
 			{
-				{ DatabaseType.SqlServer, new SqlServerTableReflector(connectionStringFactory) }
+				{ DatabaseType.SqlServer, new SqlServerTableReflector(connectionStringFactory, typeNameMapper) },
+				{ DatabaseType.MySql, new MySqlTableReflector(connectionStringFactory, typeNameMapper) }
 			};
 		}
 
@@ -33,7 +34,7 @@ namespace Database.Core.TableReflection.Impl
 
 			if (_tableReflectors.TryGetValue(database.DatabaseType, out  tableReflector) == false)
 			{
-				throw new ArgumentException(String.Format("No ITableReflector defined for database type '{0}'.", (object) database.DatabaseType));
+				throw new ArgumentException(String.Format("No ITableReflector defined for database type '{0}'.", database.DatabaseType));
 			}
 
 			return tableReflector.GetTableDefinition(database, tableName);

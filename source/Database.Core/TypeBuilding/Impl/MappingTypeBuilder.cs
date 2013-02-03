@@ -14,7 +14,7 @@ namespace Database.Core.TypeBuilding.Impl
 	public class MappingTypeBuilder : IMappingTypeBuilder
 	{
 		private static readonly MethodInfo ParameterExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Parameter(null, null));
-		private static readonly MethodInfo PropertyExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Property(null, (MethodInfo)null));
+		private static readonly MethodInfo PropertyExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Property(null, (MethodInfo) null));
 		private static readonly MethodInfo ConvertExpressionMethod = ReflectionUtility.GetMethodInfo(() => Expression.Convert(null, null));
 		private static readonly MethodInfo OpenGenericLambdaFunction = ReflectionUtility.GetMethodInfo(() => Expression.Lambda<Type>(null, null));
 

@@ -9,11 +9,12 @@ namespace Database.Core.Querying.Impl
 	{
 		private readonly IDictionary<DatabaseType, IFluentConfigurationFactory> _configurationFactories;
 
-		public FluentConfigurationFactory()
+		public FluentConfigurationFactory(IConnectionStringFactory connectionStringFactory)
 		{
 			_configurationFactories = new Dictionary<DatabaseType, IFluentConfigurationFactory>
 			{
-				{ DatabaseType.SqlServer, new SqlServer2008FluentConfigurationFactory() }
+				{ DatabaseType.SqlServer, new SqlServer2008FluentConfigurationFactory(connectionStringFactory) },
+				{ DatabaseType.MySql, new MySqlFluentConfigurationFactory(connectionStringFactory) }
 			};
 		}
 

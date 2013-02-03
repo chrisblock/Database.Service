@@ -44,7 +44,7 @@ namespace Database.Service
 
 		public IDependencyScope BeginScope()
 		{
-			return new StructureMapDependencyScope(_container.GetNestedContainer());
+			return new StructureMapDependencyResolver(_container.GetNestedContainer());
 		}
 
 		public void Dispose()

@@ -9,6 +9,8 @@ namespace Database.Core.TypeBuilding
 {
 	public class DynamicAssembly
 	{
+		public const TypeAttributes DefaultTypeAttributes = TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit;
+
 		public AssemblyName AssemblyName { get; private set; }
 
 		private readonly Lazy<AssemblyBuilder> _lazyAssemblyBuilder;
@@ -87,7 +89,7 @@ namespace Database.Core.TypeBuilding
 			return AssemblyName.BuildAssemblyQualifiedTypeName(typeName);
 		}
 
-		public TypeBuilder CreateType(string name, TypeAttributes typeAttributes, Type baseType = null)
+		public TypeBuilder CreateType(string name, TypeAttributes typeAttributes = DefaultTypeAttributes, Type baseType = null)
 		{
 			var result = (baseType == null)
 				? ModuleBuilder.DefineType(name, typeAttributes)

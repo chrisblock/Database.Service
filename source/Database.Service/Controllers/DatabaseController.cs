@@ -13,7 +13,7 @@ namespace Database.Service.Controllers
 {
 	public class DatabaseController : ApiController
 	{
-		private static readonly MethodInfo OpenGenericCreateQueryableMethod = typeof (DatabaseController).GetMethod("CreateQueryable", BindingFlags.Instance | BindingFlags.NonPublic);
+		private static readonly MethodInfo OpenGenericCreateQueryableMethod = ReflectionUtility.GetMethodInfo((DatabaseController x) => x.CreateQueryable<string>(null, null));
 
 		private readonly IQueryExecutor _queryExecutor;
 		private readonly ITableReflector _tableReflector;

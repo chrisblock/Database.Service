@@ -7,7 +7,7 @@ namespace Database.Core.Querying.Impl
 	{
 		public override DatabaseType CompatibleType { get { return DatabaseType.SqlServer; } }
 
-		public SqlServer2008FluentConfigurationFactory() : base(new ConnectionStringFactory())
+		public SqlServer2008FluentConfigurationFactory(IConnectionStringFactory connectionStringFactory) : base(connectionStringFactory)
 		{
 		}
 	}

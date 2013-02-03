@@ -11,7 +11,8 @@ namespace Database.Core.Querying.Impl
 		{
 			_connectionStringFactories = new Dictionary<DatabaseType, IConnectionStringFactory>
 			{
-				{ DatabaseType.SqlServer, new SqlServerConnectionStringFactory() }
+				{ DatabaseType.SqlServer, new SqlServerConnectionStringFactory() },
+				{ DatabaseType.MySql, new MySqlConnectionStringFactory() }
 			};
 		}
 
@@ -25,7 +26,7 @@ namespace Database.Core.Querying.Impl
 			IConnectionStringFactory connectionStringFactory;
 			if (_connectionStringFactories.TryGetValue(database.DatabaseType, out connectionStringFactory) == false)
 			{
-				throw new ArgumentException(String.Format("No IConnectionStringFactory defined for database type '{0}'.", (object) database.DatabaseType));
+				throw new ArgumentException(String.Format("No IConnectionStringFactory defined for database type '{0}'.", database.DatabaseType));
 			}
 
 			return connectionStringFactory.Create(database);

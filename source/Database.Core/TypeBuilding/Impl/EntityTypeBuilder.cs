@@ -20,7 +20,7 @@ namespace Database.Core.TypeBuilding.Impl
 		{
 			var entityName = _dynamicAssembly.BuildAssemblyQualifiedTypeName(table.GetEntityName());
 
-			var typeBuilder = _dynamicAssembly.CreateType(entityName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.BeforeFieldInit);
+			var typeBuilder = _dynamicAssembly.CreateType(entityName);
 
 			var identityProperties = new List<PropertyInfo>();
 

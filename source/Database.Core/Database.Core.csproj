@@ -38,12 +38,15 @@
     <Reference Include="Iesi.Collections, Version=1.0.1.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <HintPath>..\..\lib\Iesi.Collections.3.3.1.4000\lib\Net35\Iesi.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="NHibernate, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\NHibernate.3.3.1.4000\lib\Net35\NHibernate.dll</HintPath>
+    <Reference Include="MySql.Data">
+      <HintPath>..\..\lib\MySql.Data.6.6.4\lib\net40\MySql.Data.dll</HintPath>
     </Reference>
-    <Reference Include="StructureMap">
-      <HintPath>..\..\lib\structuremap.2.6.3\lib\StructureMap.dll</HintPath>
+    <Reference Include="NHibernate, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\NHibernate.3.3.2.4000\lib\Net35\NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="StructureMap, Version=2.6.4.0, Culture=neutral, PublicKeyToken=e60ad81abae3c223, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\structuremap.2.6.4.1\lib\net40\StructureMap.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -67,6 +70,8 @@
     <Compile Include="Querying\Impl\ConnectionStringFactory.cs" />
     <Compile Include="Querying\Impl\FluentConfigurationCache.cs" />
     <Compile Include="Querying\Impl\FluentConfigurationFactory.cs" />
+    <Compile Include="Querying\Impl\MySqlConnectionStringFactory.cs" />
+    <Compile Include="Querying\Impl\MySqlFluentConfigurationFactory.cs" />
     <Compile Include="Querying\Impl\QueryExecutor.cs" />
     <Compile Include="Querying\Impl\SessionBuilder.cs" />
     <Compile Include="Querying\Impl\SqlServer2008FluentConfigurationFactory.cs" />
@@ -77,9 +82,14 @@
     <Compile Include="DbCommandExtensions.cs" />
     <Compile Include="DbConnectionExtensions.cs" />
     <Compile Include="TableReflection\ColumnDefinition.cs" />
+    <Compile Include="TableReflection\Impl\MySqlTableReflector.cs" />
+    <Compile Include="TableReflection\Impl\MySqlTypeNameMapper.cs" />
     <Compile Include="TableReflection\Impl\SqlServerTableReflector.cs" />
+    <Compile Include="TableReflection\Impl\SqlServerTypeNameMapper.cs" />
     <Compile Include="TableReflection\Impl\TableReflector.cs" />
+    <Compile Include="TableReflection\Impl\TypeNameMapper.cs" />
     <Compile Include="TableReflection\ITableReflector.cs" />
+    <Compile Include="TableReflection\ITypeNameMapper.cs" />
     <Compile Include="TableReflection\TableDefinition.cs" />
     <Compile Include="TypeBuilderExtensions.cs" />
     <Compile Include="TypeBuilding\DynamicAssembly.cs" />

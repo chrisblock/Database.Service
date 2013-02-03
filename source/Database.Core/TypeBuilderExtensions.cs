@@ -17,8 +17,8 @@ namespace Database.Core
 		private static readonly MethodInfo ObjectGetTypeMethod = typeof (object).GetMethod("GetType", Type.EmptyTypes);
 		private static readonly MethodInfo ObjectGetHashCodeMethod = typeof (object).GetMethod("GetHashCode", Type.EmptyTypes);
 
-		private static readonly MethodInfo ObjectStaticEqualsMethod = typeof(object).GetMethod("Equals", new[] { typeof(object), typeof(object) });
-		private static readonly MethodInfo ObjectStaticReferenceEqualsMethod = typeof(object).GetMethod("ReferenceEquals", new[] { typeof(object), typeof(object) });
+		private static readonly MethodInfo ObjectStaticEqualsMethod = typeof (object).GetMethod("Equals", new[] { typeof (object), typeof (object) });
+		private static readonly MethodInfo ObjectStaticReferenceEqualsMethod = typeof (object).GetMethod("ReferenceEquals", new[] { typeof (object), typeof (object) });
 
 		private static readonly MethodInfo StringFormatMethod = typeof (string).GetMethod("Format", new[] { typeof (string), typeof (object[]) });
 
@@ -75,17 +75,17 @@ namespace Database.Core
 
 			var hashCodeFormatString = String.Join("", identityProperties.Select((x, i) => String.Format("{0}:{{{1}}};", x.Name, i)));
 
-			var method = typeBuilder.DefineMethod("GetHashCode", PublicVirtualHideBySig, typeof(int), Type.EmptyTypes);
+			var method = typeBuilder.DefineMethod("GetHashCode", PublicVirtualHideBySig, typeof (int), Type.EmptyTypes);
 
 			var il = method.GetILGenerator();
 
-			il.DeclareLocal(typeof(object[]));
+			il.DeclareLocal(typeof (object[]));
 
 			var parameterArraySize = identityProperties.Count;
 
 			il.Emit(OpCodes.Ldc_I4, parameterArraySize);
 
-			il.Emit(OpCodes.Newarr, typeof(object));
+			il.Emit(OpCodes.Newarr, typeof (object));
 
 			il.Emit(OpCodes.Stloc_0);
 
@@ -130,7 +130,7 @@ namespace Database.Core
 
 		public static MethodBuilder DefineVirtualEqualsMethod(this TypeBuilder typeBuilder, IEnumerable<PropertyInfo> includedProperties)
 		{
-			var method = typeBuilder.DefineMethod("Equals", PublicVirtualHideBySig | MethodAttributes.Virtual, typeof(bool), new Type[] { typeBuilder });
+			var method = typeBuilder.DefineMethod("Equals", PublicVirtualHideBySig | MethodAttributes.Virtual, typeof (bool), new Type[] { typeBuilder });
 
 			var il = method.GetILGenerator();
 
@@ -196,7 +196,7 @@ namespace Database.Core
 
 			var returnLocalVariableZero = il.DefineLabel();
 
-			il.DeclareLocal(typeof(bool));
+			il.DeclareLocal(typeof (bool));
 
 			//
 			// ReferenceEquals(null, obj)
@@ -211,7 +211,6 @@ namespace Database.Core
 			//
 			// ReferenceEquals(this, obj)
 			//
-
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Ldarg_1);
 
@@ -225,7 +224,6 @@ namespace Database.Core
 			//
 			// obj.GetType() != typeof (<TYPE>)
 			//
-
 			il.Emit(OpCodes.Ldarg_1);
 			il.Emit(OpCodes.Callvirt, ObjectGetTypeMethod);
 
@@ -239,7 +237,6 @@ namespace Database.Core
 			//
 			// Equals((<TYPE>) obj)
 			//
-
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Ldarg_1);
 
@@ -252,7 +249,6 @@ namespace Database.Core
 			//
 			// return
 			//
-
 			il.MarkLabel(returnLocalVariableZero);
 			il.Emit(OpCodes.Ldloc_0);
 			il.Emit(OpCodes.Ret);

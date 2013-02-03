@@ -1,10 +1,12 @@
+using System.Data.SqlClient;
+
 namespace Database.Core.Querying.Impl
 {
 	public class SqlServerConnectionStringFactory : IConnectionStringFactory
 	{
 		public string Create(Database database)
 		{
-			var connectionStringBuilder = new System.Data.SqlClient.SqlConnectionStringBuilder
+			var connectionStringBuilder = new SqlConnectionStringBuilder
 			{
 				DataSource = database.ServerName,
 				InitialCatalog = database.DatabaseName,
