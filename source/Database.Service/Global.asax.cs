@@ -15,15 +15,20 @@ namespace Database.Service
 
 		public static void RegisterRoutes(RouteCollection routes)
 		{
-			routes.MapHttpRoute("ServerInstanceDatabaseTable", "{serverName}/{instanceName}/{databaseName}/{tableName}", new { controller = "Database" });
-			routes.MapHttpRoute("ServerDatabaseTable", "{serverName}/{databaseName}/{tableName}", new { controller = "Database" });
-			routes.MapHttpRoute("DatabaseTable", "{databaseName}/{tableName}", new { controller = "Database" });
+			routes.MapHttpRoute(
+				name: "ServerInstanceDatabaseTable",
+				routeTemplate: "{databaseType}/{serverName}/{instanceName}/{databaseName}/{tableName}",
+				defaults: new { controller = "Database" });
 
 			routes.MapHttpRoute(
-				name: "DefaultApi",
-				routeTemplate: "api/{controller}/{id}",
-				defaults: new { id = RouteParameter.Optional }
-			);
+				name: "ServerDatabaseTable",
+				routeTemplate: "{databaseType}/{serverName}/{databaseName}/{tableName}",
+				defaults: new { controller = "Database" });
+
+			routes.MapHttpRoute(
+				name: "DatabaseTable",
+				routeTemplate: "{databaseType}/{databaseName}/{tableName}",
+				defaults: new { controller = "Database" });
 		}
 
 		protected void Application_Start()

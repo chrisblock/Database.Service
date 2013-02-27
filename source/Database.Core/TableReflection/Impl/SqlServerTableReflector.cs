@@ -45,10 +45,11 @@ namespace Database.Core.TableReflection.Impl
 			commandTextBuilder.AppendLine("    , [types].[scale] AS [Scale]");
 			commandTextBuilder.AppendLine("    , ISNULL([indexes].[is_primary_key], 0) AS [IsPrimaryKey]");
 			commandTextBuilder.AppendLine("    , [columns].[is_nullable] AS [IsNullable]");
-			commandTextBuilder.AppendLine("FROM [sys].[columns] AS [columns]");
-			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[types] AS [types] ON [columns].[system_type_id] = [types].[system_type_id]");
-			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[index_columns] AS [i_columns] ON [columns].[object_id] = [i_columns].[object_id] AND [columns].[column_id] = [i_columns].[column_id]");
-			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[indexes] AS [indexes] ON [i_columns].[object_id] = [indexes].[object_id] AND [indexes].[is_primary_key] = 1");
+			commandTextBuilder.AppendLine("    , [columns].[is_identity] AS [IsIdentity]");
+			commandTextBuilder.AppendLine("FROM [sys].[columns]");
+			commandTextBuilder.AppendLine("INNER JOIN [sys].[types] ON [columns].[system_type_id] = [types].[system_type_id]");
+			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[index_columns] ON [columns].[object_id] = [index_columns].[object_id] AND [columns].[column_id] = [index_columns].[column_id]");
+			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[indexes] ON [columns].[object_id] = [indexes].[object_id] AND [index_columns].[index_id] = [indexes].[index_id] AND [indexes].[is_primary_key] = 1");
 			commandTextBuilder.AppendLine("WHERE [columns].[object_id] = OBJECT_ID(@tableName);");
 
 			return commandTextBuilder.ToString();
