@@ -12,8 +12,6 @@ namespace Database.Core.Querying
 	{
 		protected IConnectionStringFactory ConnectionStringFactory { get; private set; }
 
-		public abstract DatabaseType CompatibleType { get; }
-
 		protected AbstractFluentConfigurationFactory(IConnectionStringFactory connectionStringFactory)
 		{
 			ConnectionStringFactory = connectionStringFactory;

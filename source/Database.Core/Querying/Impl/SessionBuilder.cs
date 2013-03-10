@@ -11,7 +11,7 @@ namespace Database.Core.Querying.Impl
 
 		// this should only contain one session and session factory, as this object should be per-request (HTTP scoped)
 		private ISessionFactory _sessionFactory;
-		private ISession _session;
+		private IStatelessSession _session;
 		private ITransaction _transaction;
 
 		public SessionBuilder(IFluentConfigurationCache fluentConfigurationCache)
@@ -19,7 +19,7 @@ namespace Database.Core.Querying.Impl
 			_fluentConfigurationCache = fluentConfigurationCache;
 		}
 
-		public ISession Build(Database database, Type mappingType)
+		public IStatelessSession Build(Database database, Type mappingType)
 		{
 			if (_sessionFactory == null)
 			{
@@ -28,9 +28,9 @@ namespace Database.Core.Querying.Impl
 				_sessionFactory = configuration.BuildSessionFactory();
 			}
 
-			var result = _session ?? (_session = _sessionFactory.OpenSession());
+			var result = _session ?? (_session = _sessionFactory.OpenStatelessSession());
 
-			_transaction = _session.BeginTransaction(IsolationLevel.ReadCommitted);
+			_transaction = _session.BeginTransaction(IsolationLevel.ReadUncommitted);
 
 			return result;
 		}
@@ -39,8 +39,6 @@ namespace Database.Core.Querying.Impl
 		{
 			try
 			{
-				_session.Flush();
-
 				_transaction.Commit();
 			}
 			catch (Exception)

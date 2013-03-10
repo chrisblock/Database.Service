@@ -13,16 +13,18 @@ namespace Database.Service.Controllers
 {
 	public class DatabaseController : ApiController
 	{
+		private const string DynamicAssemblyName = "Database.DynamicMappings";
+
 		private static readonly MethodInfo OpenGenericCreateQueryableMethod = ReflectionUtility.GetMethodInfo((DatabaseController x) => x.CreateQueryable<string>(null, null));
 
 		private readonly IQueryExecutor _queryExecutor;
 		private readonly ITableReflector _tableReflector;
 		private readonly IDynamicAssemblyManager _dynamicAssemblyManager;
 
-		public DatabaseController(IQueryExecutor queryExecutor, ITableReflector tableReflector, IDynamicAssemblyManager dynamicAssemblyManager)
+		public DatabaseController(IQueryExecutor queryExecutor, ITableReflector tableReflector, IDynamicAssemblyManagerFactory dynamicAssemblyManagerFactory)
 		{
 			_tableReflector = tableReflector;
-			_dynamicAssemblyManager = dynamicAssemblyManager;
+			_dynamicAssemblyManager = dynamicAssemblyManagerFactory.Create(DynamicAssemblyName);
 			_queryExecutor = queryExecutor;
 		}
 

@@ -1,11 +1,12 @@
-﻿using System.Web;
-using System.Web.Http;
+﻿using System.Web.Http;
 
 using Database.Service.ApplicationStart;
 
 using StructureMap;
 
-[assembly: PreApplicationStartMethod(typeof(StructureMapBootstrapper), "Start")]
+using WebActivatorEx;
+
+[assembly: PreApplicationStartMethod(typeof (StructureMapBootstrapper), "Start", Order = 1)]
 
 namespace Database.Service.ApplicationStart
 {

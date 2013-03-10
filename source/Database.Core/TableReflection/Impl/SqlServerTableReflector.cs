@@ -45,7 +45,7 @@ namespace Database.Core.TableReflection.Impl
 			commandTextBuilder.AppendLine("    , [types].[scale] AS [Scale]");
 			commandTextBuilder.AppendLine("    , ISNULL([indexes].[is_primary_key], 0) AS [IsPrimaryKey]");
 			commandTextBuilder.AppendLine("    , [columns].[is_nullable] AS [IsNullable]");
-			commandTextBuilder.AppendLine("    , [columns].[is_identity] AS [IsIdentity]");
+			// commandTextBuilder.AppendLine("    , [columns].[is_identity] AS [IsIdentity]");
 			commandTextBuilder.AppendLine("FROM [sys].[columns]");
 			commandTextBuilder.AppendLine("INNER JOIN [sys].[types] ON [columns].[system_type_id] = [types].[system_type_id]");
 			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[index_columns] ON [columns].[object_id] = [index_columns].[object_id] AND [columns].[column_id] = [index_columns].[column_id]");
@@ -101,6 +101,7 @@ namespace Database.Core.TableReflection.Impl
 							var scale = (byte) reader["Scale"];
 							var isPrimaryKey = (bool) reader["IsPrimaryKey"];
 							var isNullable = (bool) reader["IsNullable"];
+							// var isIdentity = (bool) reader["IsIdentity"];
 
 							var columnType = DetermineColumnType(database.DatabaseType, type, isNullable, length, precision, scale);
 

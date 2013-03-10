@@ -8,39 +8,32 @@ namespace Database.Core
 	{
 		public static MethodInfo GetMethodInfo<T>(Expression<Action<T>> expression)
 		{
-			var methodCall = expression.Body as MethodCallExpression;
+			var result = GetMethodFromExpression(expression.Body);
 
-			if (methodCall == null)
-			{
-				throw new ArgumentException(String.Format("'{0}' was not a method call expression.", expression.Body));
-			}
-
-			return methodCall.Method.IsGenericMethod
-				? methodCall.Method.GetGenericMethodDefinition()
-				: methodCall.Method;
+			return result;
 		}
 
 		public static MethodInfo GetMethodInfo<T>(Expression<Func<T>> expression)
 		{
-			var methodCall = expression.Body as MethodCallExpression;
+			var result = GetMethodFromExpression(expression.Body);
 
-			if (methodCall == null)
-			{
-				throw new ArgumentException(String.Format("'{0}' was not a method call expression.", expression.Body));
-			}
-
-			return methodCall.Method.IsGenericMethod
-				? methodCall.Method.GetGenericMethodDefinition()
-				: methodCall.Method;
+			return result;
 		}
 
 		public static MethodInfo GetMethodInfo<T, TMethodResult>(Expression<Func<T, TMethodResult>> expression)
 		{
-			var methodCall = expression.Body as MethodCallExpression;
+			var result = GetMethodFromExpression(expression.Body);
+
+			return result;
+		}
+
+		private static MethodInfo GetMethodFromExpression(Expression expression)
+		{
+			var methodCall = expression as MethodCallExpression;
 
 			if (methodCall == null)
 			{
-				throw new ArgumentException(String.Format("'{0}' was not a method call expression.", expression.Body));
+				throw new ArgumentException(String.Format("'{0}' was not a method call expression.", expression));
 			}
 
 			return methodCall.Method.IsGenericMethod

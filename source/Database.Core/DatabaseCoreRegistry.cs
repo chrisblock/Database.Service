@@ -1,4 +1,6 @@
-﻿using StructureMap.Configuration.DSL;
+﻿using Database.Core.TypeBuilding;
+
+using StructureMap.Configuration.DSL;
 
 namespace Database.Core
 {
@@ -12,6 +14,9 @@ namespace Database.Core
 
 				scan.WithDefaultConventions();
 			});
+
+			For<IDynamicAssemblyManagerFactory>()
+				.Singleton();
 		}
 	}
 }
