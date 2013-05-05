@@ -56,10 +56,9 @@ namespace Database.Service.Controllers
 
 			var types = _dynamicAssemblyManager.BuildTypesFor(tableDefinition);
 
-			// doing this some other way (e.g. putting the reflection inside a class and using IQueryable) causes an error
-			// at some point in the pipeline so that the server returns a 500; i believe it is a serialization error
-			// possibly having to do with some kind of XML linking (i've seen errors similar to this about unexpected types
-			// and whatnot)
+			// doing this some other way (e.g. putting the reflection inside a class and using the non-generic System.Collections.IQueryable)
+			// causes an error at some point in the ASP.NET pipeline so that the server returns a 500; i believe it is a serialization error
+			// possibly having to do with some kind of XML linking (i've seen errors similar to this about unexpected types and whatnot)
 			var genericMethod = OpenGenericCreateQueryableMethod.MakeGenericMethod(types.EntityType);
 
 			var response = (HttpResponseMessage) genericMethod.Invoke(this, new object[] { database, types });

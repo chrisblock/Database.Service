@@ -93,7 +93,10 @@ namespace Database.Core.TypeBuilding.Impl
 				}
 			}
 
-			if (identityColumns.Count == 1)
+			if (identityColumns.Count == 0)
+			{
+			}
+			else if (identityColumns.Count == 1)
 			{
 				var column = identityColumns.Single();
 

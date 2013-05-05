@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Database.Core
 {
@@ -9,7 +10,13 @@ namespace Database.Core
 		public static T Parse<T>(string value)
 			where T : struct, TEnum
 		{
-			var result = (T) Enum.Parse(typeof (T), value);
+			return Parse<T>(value, true);
+		}
+
+		public static T Parse<T>(string value, bool ignoreCase)
+			where T : struct, TEnum
+		{
+			var result = (T)Enum.Parse(typeof(T), value, ignoreCase);
 
 			return result;
 		}
@@ -27,8 +34,15 @@ namespace Database.Core
 		}
 
 		public static IEnumerable<T> GetValues<T>()
+			where T : struct, TEnum
 		{
 			return Enum.GetValues(typeof (T)).Cast<T>();
+		}
+
+		public static IEnumerable<MemberInfo> GetMembers<T>()
+			where T : struct, TEnum
+		{
+			return typeof (T).GetMembers(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly);
 		}
 	}
 

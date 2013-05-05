@@ -21,46 +21,95 @@ namespace Database.Core.Querying.Impl
 
 		public IStatelessSession Build(Database database, Type mappingType)
 		{
-			if (_sessionFactory == null)
+			if (_transaction == null)
 			{
-				var configuration = _fluentConfigurationCache.GetConfigurationFor(database, mappingType);
+				if (_session == null)
+				{
+					if (_sessionFactory == null)
+					{
+						var configuration = _fluentConfigurationCache.GetConfigurationFor(database, mappingType);
 
-				_sessionFactory = configuration.BuildSessionFactory();
+						_sessionFactory = configuration.BuildSessionFactory();
+					}
+
+					_session = _sessionFactory.OpenStatelessSession();
+				}
+
+				_transaction = _session.BeginTransaction(IsolationLevel.ReadUncommitted);
 			}
 
-			var result = _session ?? (_session = _sessionFactory.OpenStatelessSession());
-
-			_transaction = _session.BeginTransaction(IsolationLevel.ReadUncommitted);
-
-			return result;
+			return _session;
 		}
 
 		public void Dispose()
 		{
-			try
-			{
-				_transaction.Commit();
-			}
-			catch (Exception)
-			{
-				if ((_transaction.WasCommitted == false) && (_transaction.WasRolledBack == false))
-				{
-					_transaction.Rollback();
-				}
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
 
-				throw;
+		~SessionBuilder()
+		{
+			Dispose(false);
+		}
+
+		private void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (_transaction != null)
+				{
+					try
+					{
+						_transaction.Commit();
+					}
+					catch (Exception)
+					{
+						if ((_transaction.WasCommitted == false) && (_transaction.WasRolledBack == false))
+						{
+							_transaction.Rollback();
+						}
+
+						throw;
+					}
+					finally
+					{
+						_transaction.Dispose();
+
+						CloseSession();
+
+						CloseSessionFactory();
+					}
+				}
+				else
+				{
+					CloseSession();
+
+					CloseSessionFactory();
+				}
 			}
-			finally
+		}
+
+		private void CloseSession()
+		{
+			if (_session != null)
 			{
 				_session.Close();
 
-				_sessionFactory.Close();
-
-				_transaction.Dispose();
-
 				_session.Dispose();
 
+				_session = null;
+			}
+		}
+
+		private void CloseSessionFactory()
+		{
+			if (_sessionFactory != null)
+			{
+				_sessionFactory.Close();
+
 				_sessionFactory.Dispose();
+
+				_sessionFactory = null;
 			}
 		}
 	}

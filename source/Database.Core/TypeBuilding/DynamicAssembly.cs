@@ -51,13 +51,11 @@ namespace Database.Core.TypeBuilding
 
 		private AssemblyBuilder CreateAssemblyBuilder()
 		{
-			var uri = new Uri(GetType().Assembly.CodeBase);
-
-			var dllPath = uri.LocalPath;
+			var dllPath = GetAssemblyFolder();
 
 			return IsPersisted
-				? Thread.GetDomain().DefineDynamicAssembly(AssemblyName, AssemblyBuilderAccess.Run)
-				: Thread.GetDomain().DefineDynamicAssembly(AssemblyName, AssemblyBuilderAccess.RunAndSave, dllPath);
+				? Thread.GetDomain().DefineDynamicAssembly(AssemblyName, AssemblyBuilderAccess.RunAndSave, dllPath)
+				: Thread.GetDomain().DefineDynamicAssembly(AssemblyName, AssemblyBuilderAccess.Run);
 		}
 
 		private ModuleBuilder CreateModuleBuilder()
@@ -66,8 +64,7 @@ namespace Database.Core.TypeBuilding
 
 			if (IsPersisted)
 			{
-				var uri = new Uri(AssemblyName.CodeBase);
-				var dllName = Path.GetFileName(uri.LocalPath);
+				var dllName = GetAssemblyFileName();
 
 				if (dllName == null)
 				{
@@ -84,6 +81,23 @@ namespace Database.Core.TypeBuilding
 			return result;
 		}
 
+		private string GetAssemblyFilePath()
+		{
+			var codeBaseUri = new Uri(AssemblyName.CodeBase);
+
+			return codeBaseUri.LocalPath;
+		}
+
+		private string GetAssemblyFolder()
+		{
+			return Path.GetDirectoryName(GetAssemblyFilePath());
+		}
+
+		private string GetAssemblyFileName()
+		{
+			return Path.GetFileName(GetAssemblyFilePath());
+		}
+
 		public string BuildAssemblyQualifiedTypeName(string typeName)
 		{
 			return AssemblyName.BuildAssemblyQualifiedTypeName(typeName);
@@ -91,6 +105,8 @@ namespace Database.Core.TypeBuilding
 
 		public TypeBuilder CreateType(string name, TypeAttributes typeAttributes = DefaultTypeAttributes, Type baseType = null)
 		{
+			// TODO: use the Assembly and Module name's to build a fully namespaced typename? Or maybe namespace it like this: <Server>.<Database>.<Table>?
+
 			var result = (baseType == null)
 				? ModuleBuilder.DefineType(name, typeAttributes)
 				: ModuleBuilder.DefineType(name, typeAttributes, baseType);
@@ -101,6 +117,14 @@ namespace Database.Core.TypeBuilding
 		public Type GetDynamicType(string typeName)
 		{
 			return AssemblyBuilder.GetType(typeName);
+		}
+
+		public void Save()
+		{
+			if (IsPersisted == true)
+			{
+				AssemblyBuilder.Save(GetAssemblyFilePath());
+			}
 		}
 	}
 }

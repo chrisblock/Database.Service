@@ -22,6 +22,7 @@ namespace Database.Core.TypeBuilding.Impl
 			_entityTypeBuilder = new EntityTypeBuilder(dynamicAssembly);
 			_mappingTypeBuilder = new MappingTypeBuilder(dynamicAssembly);
 
+			// TODO: should this use Thread.GetDomain()??
 			AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 		}
 

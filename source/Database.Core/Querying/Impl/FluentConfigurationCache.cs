@@ -7,12 +7,12 @@ namespace Database.Core.Querying.Impl
 {
 	public class FluentConfigurationCache : IFluentConfigurationCache
 	{
-		private readonly IFluentConfigurationFactory _fluentConfigurationFactory;
-
 		private static readonly ConcurrentDictionary<Type, FluentConfiguration> ConfigurationsByType = new ConcurrentDictionary<Type, FluentConfiguration>();
 		private static readonly ConcurrentDictionary<Database, FluentConfiguration> ConfigurationsByDatabase = new ConcurrentDictionary<Database, FluentConfiguration>();
 
 		private static readonly object Locker = new object();
+
+		private readonly IFluentConfigurationFactory _fluentConfigurationFactory;
 
 		public FluentConfigurationCache(IFluentConfigurationFactory fluentConfigurationFactory)
 		{
@@ -21,13 +21,14 @@ namespace Database.Core.Querying.Impl
 
 		public FluentConfiguration GetConfigurationFor(Database database, Type mappingType)
 		{
+			// storing the configurations by type keeps us from adding the same mapping to the configuration twice
 			if (ConfigurationsByType.ContainsKey(mappingType) == false)
 			{
-				// TODO: add another lock to lock each dictionary seperately..? may cause deadlock? seems useless since their usage would be nested...
 				lock (Locker)
 				{
 					if (ConfigurationsByType.ContainsKey(mappingType) == false)
 					{
+						// storing the configurations by database keeps us from re-generating the configuration all together
 						if (ConfigurationsByDatabase.ContainsKey(database) == false)
 						{
 							ConfigurationsByDatabase[database] = _fluentConfigurationFactory.Create(database);
