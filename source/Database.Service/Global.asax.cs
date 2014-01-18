@@ -1,5 +1,7 @@
 ﻿using System.Web;
-using System.Web.Mvc;
+using System.Web.Http;
+
+using Database.Service.ApplicationStart;
 
 namespace Database.Service
 {
@@ -7,7 +9,8 @@ namespace Database.Service
 	{
 		protected void Application_Start()
 		{
-			AreaRegistration.RegisterAllAreas();
+			StructureMapConfiguration.Configure();
+			RouteConfiguration.Configure(GlobalConfiguration.Configuration.Routes);
 		}
 	}
 }

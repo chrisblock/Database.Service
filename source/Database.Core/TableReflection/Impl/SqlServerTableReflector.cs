@@ -27,13 +27,20 @@ namespace Database.Core.TableReflection.Impl
 			commandTextBuilder.AppendLine("    , [columns].[max_length] AS [Length]");
 			commandTextBuilder.AppendLine("    , [types].[precision] AS [Precision]");
 			commandTextBuilder.AppendLine("    , [types].[scale] AS [Scale]");
-			commandTextBuilder.AppendLine("    , ISNULL([indexes].[is_primary_key], 0) AS [IsPrimaryKey]");
-			commandTextBuilder.AppendLine("    , [columns].[is_nullable] AS [IsNullable]");
-			commandTextBuilder.AppendLine("    , [columns].[is_identity] AS [IsIdentity]");
+			commandTextBuilder.AppendLine("    , CONVERT(BIT, [columns].[is_nullable]) AS [IsNullable]");
+			commandTextBuilder.AppendLine("    , CONVERT(BIT, [columns].[is_identity]) AS [IsIdentity]");
+			commandTextBuilder.AppendLine("    , CONVERT(BIT, CASE WHEN [index_columns].[column_id] IS NULL THEN 0 ELSE 1 END) AS [IsPrimaryKey]");
 			commandTextBuilder.AppendLine("FROM [sys].[columns]");
-			commandTextBuilder.AppendLine("INNER JOIN [sys].[types] ON [columns].[system_type_id] = [types].[system_type_id] AND [columns].[user_type_id] = [types].[user_type_id]");
-			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[index_columns] ON [columns].[object_id] = [index_columns].[object_id] AND [columns].[column_id] = [index_columns].[column_id]");
-			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[indexes] ON [columns].[object_id] = [indexes].[object_id] AND [index_columns].[index_id] = [indexes].[index_id] AND [indexes].[is_primary_key] = 1");
+			commandTextBuilder.AppendLine("INNER JOIN [sys].[types]");
+			commandTextBuilder.AppendLine("            ON [types].[system_type_id] = [columns].[system_type_id]");
+			commandTextBuilder.AppendLine("            AND [types].[user_type_id] = [columns].[user_type_id]");
+			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[indexes]");
+			commandTextBuilder.AppendLine("            ON [indexes].[object_id] = [columns].[object_id]");
+			commandTextBuilder.AppendLine("            AND [indexes].[is_primary_key] = 1");
+			commandTextBuilder.AppendLine("LEFT OUTER JOIN [sys].[index_columns]");
+			commandTextBuilder.AppendLine("            ON [index_columns].[object_id] = [indexes].[object_id]");
+			commandTextBuilder.AppendLine("            AND [index_columns].[index_id] = [indexes].[index_id]");
+			commandTextBuilder.AppendLine("            AND [index_columns].[column_id] = [columns].[column_id]");
 			commandTextBuilder.AppendLine("WHERE [columns].[object_id] = OBJECT_ID(@tableName);");
 
 			return commandTextBuilder.ToString();
@@ -68,7 +75,7 @@ namespace Database.Core.TableReflection.Impl
 
 			var result = _typeNameMapper.GetType(databaseType, sqlTypeName);
 
-			if ((result == typeof(string)) && (len == 1))
+			if ((result == typeof (string)) && (len == 1))
 			{
 				result = typeof (char);
 			}
@@ -102,9 +109,9 @@ namespace Database.Core.TableReflection.Impl
 							var length = (short) reader["Length"];
 							var precision = (byte) reader["Precision"];
 							var scale = (byte) reader["Scale"];
-							var isPrimaryKey = (bool) reader["IsPrimaryKey"];
 							var isNullable = (bool) reader["IsNullable"];
-							// var isIdentity = (bool) reader["IsIdentity"];
+							var isIdentity = (bool) reader["IsIdentity"];
+							var isPrimaryKey = (bool) reader["IsPrimaryKey"];
 
 							var columnType = DetermineColumnType(database.DatabaseType, type, isNullable, length, precision, scale);
 
@@ -112,6 +119,11 @@ namespace Database.Core.TableReflection.Impl
 							{
 								Name = columnName,
 								Type = columnType,
+								Length = length,
+								Scale = scale,
+								Precision = precision,
+								IsNullable = isNullable,
+								IsIdentity = isIdentity,
 								IsPrimaryKeyColumn = isPrimaryKey
 							};
 
