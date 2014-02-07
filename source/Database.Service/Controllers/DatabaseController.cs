@@ -29,20 +29,20 @@ namespace Database.Service.Controllers
 		}
 
 		[Queryable]
-		public HttpResponseMessage Get(string databaseType, string serverName, string instanceName, string databaseName, string tableName)
+		public HttpResponseMessage Get(string serverType, string serverName, string instanceName, string databaseName, string tableName)
 		{
 			var serverNameWithInstance = String.Format(@"{0}\{1}", serverName, instanceName);
 
-			return Get(databaseType, serverNameWithInstance, databaseName, tableName);
+			return Get(serverType, serverNameWithInstance, databaseName, tableName);
 		}
 
 		[Queryable]
-		public HttpResponseMessage Get(string databaseType, string serverName, string databaseName, string tableName)
+		public HttpResponseMessage Get(string serverType, string serverName, string databaseName, string tableName)
 		{
 			DatabaseType result;
-			if (Enums.TryParse(databaseType, out result) == false)
+			if (Enums.TryParse(serverType, out result) == false)
 			{
-				throw new ArgumentException(String.Format("'{0}' is an unrecognized database type.", databaseType), "databaseType");
+				throw new ArgumentException(String.Format("'{0}' is an unrecognized database type.", serverType), "serverType");
 			}
 
 			var database = new Core.Database
@@ -67,9 +67,9 @@ namespace Database.Service.Controllers
 		}
 
 		[Queryable]
-		public HttpResponseMessage Get(string databaseType, string databaseName, string tableName)
+		public HttpResponseMessage Get(string serverType, string databaseName, string tableName)
 		{
-			return Get(databaseType, Environment.MachineName, databaseName, tableName);
+			return Get(serverType, Environment.MachineName, databaseName, tableName);
 		}
 
 		private HttpResponseMessage CreateQueryable<T>(Core.Database database, EntityTypes types)

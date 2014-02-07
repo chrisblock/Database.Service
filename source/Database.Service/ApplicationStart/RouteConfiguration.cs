@@ -8,17 +8,17 @@ namespace Database.Service.ApplicationStart
 		{
 			routes.MapHttpRoute(
 				name: "ServerInstanceDatabaseTable",
-				routeTemplate: "{databaseType}/{serverName}/{instanceName}/{databaseName}/{tableName}",
+				routeTemplate: "{serverType}/{serverName}/{instanceName}/{databaseName}/{tableName}",
 				defaults: new { controller = "Database" });
 
 			routes.MapHttpRoute(
 				name: "ServerDatabaseTable",
-				routeTemplate: "{databaseType}/{serverName}/{databaseName}/{tableName}",
+				routeTemplate: "{serverType}/{serverName}/{databaseName}/{tableName}",
 				defaults: new { controller = "Database" });
 
 			routes.MapHttpRoute(
 				name: "DatabaseTable",
-				routeTemplate: "{databaseType}/{databaseName}/{tableName}",
+				routeTemplate: "{serverType}/{databaseName}/{tableName}",
 				defaults: new { controller = "Database" });
 		}
 	}
