@@ -9,8 +9,14 @@ namespace Database.Service
 	{
 		protected void Application_Start()
 		{
-			StructureMapConfiguration.Configure();
-			RouteConfiguration.Configure(GlobalConfiguration.Configuration.Routes);
+			GlobalConfiguration.Configure(ConfigureApplication);
+		}
+
+		private void ConfigureApplication(HttpConfiguration configuration)
+		{
+			StructureMapConfiguration.Configure(configuration);
+
+			configuration.MapHttpAttributeRoutes();
 		}
 	}
 }

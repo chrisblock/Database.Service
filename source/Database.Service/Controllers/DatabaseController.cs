@@ -28,7 +28,9 @@ namespace Database.Service.Controllers
 			_queryExecutor = queryExecutor;
 		}
 
+		[HttpGet]
 		[Queryable]
+		[Route("api/{serverType}/{serverName}/{instanceName}/{databaseName}/{tableName}", Name = "ServerInstanceDatabaseTable")]
 		public HttpResponseMessage Get(string serverType, string serverName, string instanceName, string databaseName, string tableName)
 		{
 			var serverNameWithInstance = String.Format(@"{0}\{1}", serverName, instanceName);
@@ -36,7 +38,9 @@ namespace Database.Service.Controllers
 			return Get(serverType, serverNameWithInstance, databaseName, tableName);
 		}
 
+		[HttpGet]
 		[Queryable]
+		[Route("api/{serverType}/{serverName}/{databaseName}/{tableName}", Name = "ServerDatabaseTable")]
 		public HttpResponseMessage Get(string serverType, string serverName, string databaseName, string tableName)
 		{
 			DatabaseType result;
@@ -66,7 +70,9 @@ namespace Database.Service.Controllers
 			return response;
 		}
 
+		[HttpGet]
 		[Queryable]
+		[Route("api/{serverType}/{databaseName}/{tableName}", Name = "DatabaseTable")]
 		public HttpResponseMessage Get(string serverType, string databaseName, string tableName)
 		{
 			return Get(serverType, Environment.MachineName, databaseName, tableName);

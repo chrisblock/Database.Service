@@ -6,11 +6,11 @@ namespace Database.Service.ApplicationStart
 {
 	public static class StructureMapConfiguration
 	{
-		public static void Configure()
+		public static void Configure(HttpConfiguration configuration)
 		{
 			ObjectFactory.Initialize(init => init.AddRegistry<DatabaseServiceRegistry>());
 
-			GlobalConfiguration.Configuration.DependencyResolver = new StructureMapDependencyResolver();
+			configuration.DependencyResolver = new StructureMapDependencyResolver();
 		}
 	}
 }
