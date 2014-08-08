@@ -121,7 +121,7 @@ namespace Database.Core.TypeBuilding
 
 		public void Save()
 		{
-			if (IsPersisted == true)
+			if (IsPersisted)
 			{
 				AssemblyBuilder.Save(GetAssemblyFilePath());
 			}

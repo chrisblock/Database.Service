@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
+using System.Web.Http.OData;
 
 using Database.Core;
 using Database.Core.Querying;
@@ -29,7 +30,7 @@ namespace Database.Service.Controllers
 		}
 
 		[HttpGet]
-		[Queryable]
+		[EnableQuery]
 		[Route("api/{serverType}/{serverName}/{instanceName}/{databaseName}/{tableName}", Name = "ServerInstanceDatabaseTable")]
 		public HttpResponseMessage Get(string serverType, string serverName, string instanceName, string databaseName, string tableName)
 		{
@@ -39,7 +40,7 @@ namespace Database.Service.Controllers
 		}
 
 		[HttpGet]
-		[Queryable]
+		[EnableQuery]
 		[Route("api/{serverType}/{serverName}/{databaseName}/{tableName}", Name = "ServerDatabaseTable")]
 		public HttpResponseMessage Get(string serverType, string serverName, string databaseName, string tableName)
 		{
@@ -71,7 +72,7 @@ namespace Database.Service.Controllers
 		}
 
 		[HttpGet]
-		[Queryable]
+		[EnableQuery]
 		[Route("api/{serverType}/{databaseName}/{tableName}", Name = "DatabaseTable")]
 		public HttpResponseMessage Get(string serverType, string databaseName, string tableName)
 		{

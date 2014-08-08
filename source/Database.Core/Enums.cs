@@ -42,7 +42,11 @@ namespace Database.Core
 		public static IEnumerable<MemberInfo> GetMembers<T>()
 			where T : struct, TEnum
 		{
-			return typeof (T).GetMembers(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly);
+			var type = typeof (T);
+
+			var result = type.GetMembers(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly);
+
+			return result;
 		}
 	}
 
