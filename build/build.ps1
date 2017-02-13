@@ -11,10 +11,10 @@ $v4_net_version = (ls "$windir\Microsoft.NET\Framework\v4.0*").Name
 
 $msbuild = "$windir\Microsoft.NET\Framework\$v4_net_version\MSBuild.exe"
 
-$options = "/noconsolelogger /p:Configuration=Release /p:OutDir=""$outputFolder"""
+$options = "/m /noconsolelogger /p:Configuration=Release /p:OutDir=""$outputFolder"""
 
-if ([System.IO.Directory]::Exists($outputFolder)) {
-	[System.IO.Directory]::Delete($outputFolder, 1)
+if (Test-Path $outputFolder) {
+	Remove-Item $outputFolder -Recurse -Force
 }
 
 $build = $msbuild + " ""$solution"" " + $options + " /t:Build"

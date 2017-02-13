@@ -9,7 +9,7 @@ namespace Database.Service
 	{
 		protected void Application_Start()
 		{
-			GlobalConfiguration.Configure(ConfigureApplication);
+			ConfigureApplication(GlobalConfiguration.Configuration);
 		}
 
 		private void ConfigureApplication(HttpConfiguration configuration)
